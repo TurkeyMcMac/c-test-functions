@@ -114,7 +114,7 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 		has_more = n_read == buf_space;
 		if (errno) return -1;
 		char *search = buf_stored;
-		size_t n_search = n_read + SHIFT_KEEP;
+		size_t n_search = n_read + buf - buf_stored;
 		buf_space = sizeof(buf_stored) - SHIFT_KEEP;
 		if (wip_sym) {
 			search = buf;
