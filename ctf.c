@@ -103,7 +103,7 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 		buf_space = sizeof(buf_stored) - SHIFT_KEEP;
 		if (wip_sym) {
 				search = buf;
-				n_search -= SHIFT_KEEP;
+				n_search -= buf - buf_stored;
 			char *end = memchr(search, '\n', n_search);
 			if (end) {
 				size_t n_added = end - search;
