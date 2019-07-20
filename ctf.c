@@ -6,9 +6,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PREFIX "ctf_test___"
+#define PREFIX "Ctf_TEST___"
 #define PREFIX_SIZE 11
 #define SHIFT_KEEP (PREFIX_SIZE - 1)
+
+#define SUFFIX "___TEST_ctF"
+#define SUFFIX_SIZE 11
 
 static void *xmalloc(size_t size)
 {
@@ -83,6 +86,17 @@ static void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 #define GROW(list, len, cap, append) \
 	grow_((void **)&(list), &(len), &(cap), append, sizeof *(list))
 
+static void confirm_name(char ***names, size_t *n_names, size_t *names_cap,
+	char *name, size_t name_len)
+{
+	if (memmem(name, name_len + 1, SUFFIX, SUFFIX_SIZE + 1)) {
+		char **push = GROW(*names, *n_names, *names_cap, 1);
+		*push = name;
+	} else {
+		free(name);
+	}
+}
+
 static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	size_t *names_cap)
 {
@@ -112,9 +126,8 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 					wip_sym_cap, n_added + 1);
 				memcpy(more, search, n_added);
 				more[n_added] = '\0';
-				char **push = GROW(*names, *n_names, *names_cap,
-					1);
-				*push = wip_sym;
+				confirm_name(names, n_names, names_cap,
+					wip_sym, wip_sym_len);
 				wip_sym = NULL;
 				search += n_added + 1;
 				n_search -= n_added + 1;
@@ -135,12 +148,11 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 					search_left - PREFIX_SIZE);
 				if (sym_end) {
 					size_t sym_len = sym_end - sym;
-					char **push = GROW(*names, *n_names,
-						*names_cap, 1);
 					char *saved = xmalloc(sym_len + 1);
 					memcpy(saved, sym, sym_len);
 					saved[sym_len] = '\0';
-					*push = saved;
+					confirm_name(names, n_names, names_cap,
+						saved, sym_len);
 					char *old_search = search;
 					search = sym + sym_len + 1;
 					n_search -= search - old_search;
@@ -183,12 +195,12 @@ int main(int argc, char *argv[])
 	}
 }
 
-void ctf_test___111111(void)
+void Ctf_TEST___111111___TEST_ctF(void)
 {
 	printf("test 1\n");
 }
 
-void ctf_test___222222(void)
+void Ctf_TEST___222222___TEST_ctF(void)
 {
 	printf("test 2\n");
 }
