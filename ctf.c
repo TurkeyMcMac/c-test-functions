@@ -1,3 +1,4 @@
+#include "libctf.h"
 #include <dlfcn.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -6,11 +7,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PREFIX "Ctf_TEST___"
+#define STRINGIFY(thing) STRINGIFY_(thing)
+#define STRINGIFY_(thing) #thing
+
+#define PREFIX STRINGIFY(CTF_PREFIX)
 #define PREFIX_SIZE 11
 #define SHIFT_KEEP (PREFIX_SIZE - 1)
 
-#define SUFFIX "___TEST_ctF"
+#define SUFFIX STRINGIFY(CTF_SUFFIX)
 #define SUFFIX_SIZE 11
 
 static void *xmalloc(size_t size)
@@ -194,12 +198,10 @@ int main(int argc, char *argv[])
 	}
 }
 
-void Ctf_TEST___111111___TEST_ctF(void)
-{
+CTF_TEST(test_1,
 	printf("test 1\n");
-}
+)
 
-void Ctf_TEST___222222___TEST_ctF(void)
-{
+CTF_TEST(test_2,
 	printf("test 2\n");
-}
+)
