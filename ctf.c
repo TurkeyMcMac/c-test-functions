@@ -100,7 +100,7 @@ static void confirm_name(char ***names, size_t *n_names, size_t *names_cap,
 static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	size_t *names_cap)
 {
-	const char prefix[PREFIX_SIZE] = PREFIX;
+	static const char prefix[PREFIX_SIZE] = PREFIX;
 	char buf_stored[BUFSIZ + SHIFT_KEEP];
 	size_t buf_space = sizeof(buf_stored);
 	char *buf = buf_stored;
