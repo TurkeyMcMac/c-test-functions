@@ -1,3 +1,4 @@
+#include <dlfcn.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -160,6 +161,8 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	return 0;
 }
 
+typedef void (*test_fun)(void);
+
 int main(int argc, char *argv[])
 {
 	size_t n_names = 0, names_cap = 5;
@@ -169,13 +172,23 @@ int main(int argc, char *argv[])
 	if (start_nm_proc(argv[1], &pid, &fd)) exit(EXIT_FAILURE);
 	if (scan_test_names(fd, &names, &n_names, &names_cap))
 		exit(EXIT_FAILURE);
+	void *dl = dlopen(argv[1], RTLD_LAZY);
 	printf("tests:\n");
 	for (size_t i = 0; i < n_names; ++i) {
-		printf(" - %s\n", names[i]);
+		void *sym = dlsym(dl, names[i]);
+		if (sym) {
+			test_fun fun = *(test_fun *)&sym;
+			fun();
+		}
 	}
 }
 
 void ctf_test___111111(void)
-{}
+{
+	printf("test 1\n");
+}
+
 void ctf_test___222222(void)
-{}
+{
+	printf("test 2\n");
+}
