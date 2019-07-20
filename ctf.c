@@ -104,7 +104,6 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	char buf_stored[BUFSIZ + SHIFT_KEEP];
 	size_t buf_space = sizeof(buf_stored);
 	char *buf = buf_stored;
-	char __[10000];
 	char *wip_sym = NULL;
 	size_t wip_sym_len, wip_sym_cap;
 	bool has_more;
