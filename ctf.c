@@ -243,7 +243,8 @@ int main(int argc, char *argv[])
 		void *sym = dlsym(dl, names[i]);
 		if (sym) {
 			char *test_name = names[i] + PREFIX_SIZE;
-			*strstr(test_name, SUFFIX) = '\0';
+			*(char *)memmem(test_name, strlen(test_name) + 1,
+				SUFFIX, SUFFIX_SIZE + 1) = '\0';
 			if (!regexec(&name_pat, test_name, 0, NULL, 0)) {
 				test_fun fun = *(test_fun *)&sym;
 				FILE *o = start_test(fun);
