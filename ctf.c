@@ -49,11 +49,14 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 	int pipefds[2];
 	pid_t pid;
 	char *arg1 = path_to_arg(fpath);
-	if (pipe(pipefds)) goto error_pipe;
+	if (pipe(pipefds)) {
+		free(arg1);
+		return -1;
+	}
 	if ((pid = fork())) {
 		free(arg1);
-		if (pid < 0) goto error_fork;
-		if (close(pipefds[1])) goto error_close;
+		if (pid < 0) return -1;
+		if (close(pipefds[1])) return -1;
 		*pidp = pid;
 		*fdp = pipefds[0];
 		return 0;
@@ -63,16 +66,10 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		errno = 0;
 		while (dup2(pipefds[1], STDOUT_FILENO) < 0 && errno == EINTR)
 			;
-		if (errno) exit(EXIT_FAILURE);
-		if (close(pipefds[0]) || close(pipefds[1])) exit(EXIT_FAILURE);
+		if (errno) return -1;
+		if (close(pipefds[0]) || close(pipefds[1])) return -1;
 		execvp("nm", argv);
 	}
-
-error_pipe:
-	free(arg1);
-error_close:
-error_fork:
-	return -1;
 }
 
 static void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
