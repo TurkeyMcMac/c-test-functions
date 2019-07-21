@@ -58,7 +58,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 	if ((pid = fork())) {
 		free(arg1);
 		if (pid < 0) return -1;
-		if (close(pipefds[1])) return -1;
+		close(pipefds[1]);
 		*pidp = pid;
 		*fdp = pipefds[0];
 		return 0;
@@ -68,8 +68,9 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		errno = 0;
 		while (dup2(pipefds[1], STDOUT_FILENO) < 0 && errno == EINTR)
 			;
-		if (errno) return -1;
-		if (close(pipefds[0]) || close(pipefds[1])) return -1;
+		if (errno) exit(EXIT_FAILURE);
+		close(pipefds[0]);
+		close(pipefds[1]);
 		execvp("nm", argv);
 	}
 	return 0;
@@ -193,8 +194,10 @@ static FILE *start_test(test_fun fun)
 	if (pipe(pipefds)) return NULL;
 	if ((pid = fork())) {
 		if (pid < 0) return NULL;
-		if (close(pipefds[1])) return NULL;
-		return fdopen(pipefds[0], "r");
+		close(pipefds[1]);
+		FILE *out = fdopen(pipefds[0], "r");
+		if (!out) kill(pid, SIGKILL);
+		return out;
 	} else {
 		errno = 0;
 		while (dup2(pipefds[1], STDOUT_FILENO) < 0 && errno == EINTR)
@@ -202,7 +205,8 @@ static FILE *start_test(test_fun fun)
 		if (errno) return NULL;
 		while (dup2(pipefds[1], STDERR_FILENO) < 0 && errno == EINTR)
 			;
-		if (close(pipefds[0]) || close(pipefds[1])) return NULL;
+		close(pipefds[0]);
+		close(pipefds[1]);
 		fun();
 		exit(0);
 	}
