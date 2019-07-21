@@ -238,6 +238,7 @@ int main(int argc, char *argv[])
 		if (!dl && !(dl = dlopen(argv[2], RTLD_LAZY))) {
 			fprintf(stderr, "%s: %s: %s",
 				argv[0], argv[2], dlerror());
+			exit(EXIT_FAILURE);
 		}
 		void *sym = dlsym(dl, names[i]);
 		if (sym) {
