@@ -70,6 +70,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		if (close(pipefds[0]) || close(pipefds[1])) return -1;
 		execvp("nm", argv);
 	}
+	return 0;
 }
 
 static void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
