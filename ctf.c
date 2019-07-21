@@ -1,6 +1,7 @@
 #include "libctf.h"
 #include <dlfcn.h>
 #include <errno.h>
+#include <regex.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,6 +49,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 {
 	int pipefds[2];
 	pid_t pid;
+	if (fflush(NULL)) return -1;
 	char *arg1 = path_to_arg(fpath);
 	if (pipe(pipefds)) {
 		free(arg1);
@@ -174,26 +176,87 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	return 0;
 }
 
+void system_error(const char *prog_name)
+{
+	fprintf(stderr, "%s", prog_name);
+	perror(": System error: ");
+	exit(EXIT_FAILURE);
+}
+
 typedef void (*test_fun)(void);
+
+static FILE *start_test(test_fun fun)
+{
+	pid_t pid;
+	int pipefds[2];
+	if (fflush(NULL)) return NULL;
+	if (pipe(pipefds)) return NULL;
+	if ((pid = fork())) {
+		if (pid < 0) return NULL;
+		if (close(pipefds[1])) return NULL;
+		return fdopen(pipefds[0], "r");
+	} else {
+		errno = 0;
+		while (dup2(pipefds[1], STDOUT_FILENO) < 0 && errno == EINTR)
+			;
+		if (errno) return NULL;
+		while (dup2(pipefds[1], STDERR_FILENO) < 0 && errno == EINTR)
+			;
+		if (close(pipefds[0]) || close(pipefds[1])) return NULL;
+		fun();
+		exit(0);
+	}
+	return NULL;
+}
 
 int main(int argc, char *argv[])
 {
+	int err;
 	size_t n_names = 0, names_cap = 5;
 	char **names = xmalloc(names_cap * sizeof(*names));
 	pid_t pid;
 	int fd;
-	if (start_nm_proc(argv[1], &pid, &fd)) exit(EXIT_FAILURE);
-	if (scan_test_names(fd, &names, &n_names, &names_cap))
+	regex_t name_pat;
+	err = regcomp(&name_pat, argv[1], REG_NOSUB);
+	if (err) {
+		char err_buf[256];
+		regerror(err, &name_pat, err_buf, sizeof(err_buf));
+		fprintf(stderr, "%s: Regular expression error: %s\n",
+			argv[0], err_buf);
 		exit(EXIT_FAILURE);
-	void *dl = dlopen(argv[1], RTLD_LAZY);
-	printf("tests:\n");
+	}
+	if (start_nm_proc(argv[2], &pid, &fd)) system_error(argv[0]);
+	if (scan_test_names(fd, &names, &n_names, &names_cap))
+		system_error(argv[0]);
+	void *dl = dlopen(argv[2], RTLD_LAZY);
 	for (size_t i = 0; i < n_names; ++i) {
 		void *sym = dlsym(dl, names[i]);
 		if (sym) {
-			test_fun fun = *(test_fun *)&sym;
-			fun();
+			char *test_name = names[i] + PREFIX_SIZE;
+			*strstr(test_name, SUFFIX) = '\0';
+			if (!regexec(&name_pat, test_name, 0, NULL, 0)) {
+				test_fun fun = *(test_fun *)&sym;
+				FILE *o = start_test(fun);
+				if (!o) system_error(argv[0]);
+				char *line = NULL;
+				size_t line_cap = 0;
+				ssize_t len;
+				printf("-- %s --\n", test_name);
+				while ((len = getline(&line, &line_cap, o)) > 0)
+				{
+					if (line[len - 1] != '\n') {
+						line[len] = '\n';
+						++len;
+					}
+					printf("%s:%.*s",
+						test_name, (int)len, line);
+				}
+			}
 		}
 	}
+	dlclose(dl);
+	close(fd);
+	regfree(&name_pat);
 }
 
 CTF_TEST(test_1,
