@@ -233,8 +233,12 @@ int main(int argc, char *argv[])
 	if (start_nm_proc(argv[2], &pid, &fd)) system_error(argv[0]);
 	if (scan_test_names(fd, &names, &n_names, &names_cap))
 		system_error(argv[0]);
-	void *dl = dlopen(argv[2], RTLD_LAZY);
+	void *dl = NULL;
 	for (size_t i = 0; i < n_names; ++i) {
+		if (!dl && !(dl = dlopen(argv[2], RTLD_LAZY))) {
+			fprintf(stderr, "%s: %s: %s",
+				argv[0], argv[2], dlerror());
+		}
 		void *sym = dlsym(dl, names[i]);
 		if (sym) {
 			char *test_name = names[i] + PREFIX_SIZE;
@@ -256,10 +260,12 @@ int main(int argc, char *argv[])
 					printf("%s:%.*s",
 						test_name, (int)len, line);
 				}
+				dlclose(dl);
+				dl = NULL;
 			}
 		}
 	}
-	dlclose(dl);
+	if (dl) dlclose(dl);
 	close(fd);
 	regfree(&name_pat);
 }
