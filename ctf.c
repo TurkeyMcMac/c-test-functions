@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <regex.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
