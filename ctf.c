@@ -263,8 +263,6 @@ int main(int argc, char *argv[])
 					printf("%s:%.*s",
 						test_name, (int)len, line);
 				}
-				dlclose(dl);
-				dl = NULL;
 				int exit_info;
 				waitpid(test_pid, &exit_info, 0);
 				int exit_code = WEXITSTATUS(exit_info);
@@ -275,6 +273,8 @@ int main(int argc, char *argv[])
 						"SUCCEEDED" : "FAILED",
 					exit_code,
 					core_dump ? "   Core dumped" : "");
+				if (!WIFEXITED(exit_info)) dlclose(dl);
+				dl = NULL;
 			}
 		}
 	}
