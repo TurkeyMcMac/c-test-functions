@@ -185,9 +185,9 @@ void system_error(const char *prog_name)
 	exit(EXIT_FAILURE);
 }
 
-typedef void (*test_fun)(void);
+typedef int (*test_fun)(void);
 
-static FILE *start_test(test_fun fun)
+static FILE *start_test(test_fun fun, pid_t *test_pid)
 {
 	pid_t pid;
 	int pipefds[2];
@@ -198,6 +198,7 @@ static FILE *start_test(test_fun fun)
 		close(pipefds[1]);
 		FILE *out = fdopen(pipefds[0], "r");
 		if (!out) kill(pid, SIGKILL);
+		*test_pid = pid;
 		return out;
 	} else {
 		errno = 0;
@@ -208,8 +209,7 @@ static FILE *start_test(test_fun fun)
 			;
 		close(pipefds[0]);
 		close(pipefds[1]);
-		fun();
-		exit(0);
+		exit(fun());
 	}
 	return NULL;
 }
@@ -247,7 +247,8 @@ int main(int argc, char *argv[])
 				SUFFIX, SUFFIX_SIZE + 1) = '\0';
 			if (!regexec(&name_pat, test_name, 0, NULL, 0)) {
 				test_fun fun = *(test_fun *)&sym;
-				FILE *o = start_test(fun);
+				pid_t test_pid;
+				FILE *o = start_test(fun, &test_pid);
 				if (!o) system_error(argv[0]);
 				char *line = NULL;
 				size_t line_cap = 0;
@@ -264,6 +265,16 @@ int main(int argc, char *argv[])
 				}
 				dlclose(dl);
 				dl = NULL;
+				int exit_info;
+				waitpid(test_pid, &exit_info, 0);
+				int exit_code = WEXITSTATUS(exit_info);
+				int core_dump = WCOREDUMP(exit_info);
+				printf("%s %s   Exit code: %d%s\n",
+					test_name,
+					exit_code == 0 && !core_dump ?
+						"SUCCEEDED" : "FAILED",
+					exit_code,
+					core_dump ? "   Core dumped" : "");
 			}
 		}
 	}
@@ -272,10 +283,18 @@ int main(int argc, char *argv[])
 	regfree(&name_pat);
 }
 
+#include <assert.h>
+
 CTF_TEST(test_1,
 	printf("test 1\n");
 )
 
 CTF_TEST(test_2,
 	printf("test 2\n");
+	assert(1 == 2);
+)
+
+CTF_TEST(test_3,
+	printf("test 3\n");
+	return 2;
 )
