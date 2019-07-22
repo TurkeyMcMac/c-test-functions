@@ -1,3 +1,6 @@
+#ifndef LIBCTF_H_
+#define LIBCTF_H_
+
 #define CTF_PREFIX Ctf_TEST___
 #define CTF_SUFFIX ___TEST_ctF
 #define CTF_CIRCUMFIX(name) CTF_CIRCUMFIX_(CTF_PREFIX, name, CTF_SUFFIX)
@@ -13,3 +16,5 @@
 #else
 #	define CTF_TEST(name, ...)
 #endif
+
+#endif /* LIBCTF_H_ */
