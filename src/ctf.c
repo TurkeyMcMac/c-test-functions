@@ -28,52 +28,29 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	if (get_test_syms(argv[2], &names, &n_names)) system_error(argv[0]);
-	void *dl = NULL;
+	struct test *tests = xmalloc(n_names * sizeof(*tests));
+	size_t n_tests = 0;
+	void *dl = dlopen(argv[2], RTLD_LAZY);
+	if (!dl) {
+		fprintf(stderr, "%s: %s: %s",
+			argv[0], argv[2], dlerror());
+		exit(EXIT_FAILURE);
+	}
 	for (size_t i = 0; i < n_names; ++i) {
-		if (!dl && !(dl = dlopen(argv[2], RTLD_LAZY))) {
-			fprintf(stderr, "%s: %s: %s",
-				argv[0], argv[2], dlerror());
-			exit(EXIT_FAILURE);
-		}
 		void *sym = dlsym(dl, names[i]);
 		if (sym) {
 			char *test_name = names[i] + PREFIX_SIZE;
 			*(char *)memmem(test_name, strlen(test_name) + 1,
 				SUFFIX, SUFFIX_SIZE + 1) = '\0';
 			if (!regexec(&name_pat, test_name, 0, NULL, 0)) {
-				test_fun fun = *(test_fun *)&sym;
-				pid_t test_pid;
-				FILE *o = start_test(fun, &test_pid);
-				if (!o) system_error(argv[0]);
-				char *line = NULL;
-				size_t line_cap = 0;
-				ssize_t len;
-				printf("-- %s --\n", test_name);
-				while ((len = getline(&line, &line_cap, o)) > 0)
-				{
-					if (line[len - 1] != '\n') {
-						line[len] = '\n';
-						++len;
-					}
-					printf("%s:%.*s",
-						test_name, (int)len, line);
-				}
-				int exit_info;
-				waitpid(test_pid, &exit_info, 0);
-				int exit_code = WEXITSTATUS(exit_info);
-				int core_dump = WCOREDUMP(exit_info);
-				printf("%s %s   Exit code: %d%s\n",
-					test_name,
-					exit_code == 0 && !core_dump ?
-						"SUCCEEDED" : "FAILED",
-					exit_code,
-					core_dump ? "   Core dumped" : "");
-				if (!WIFEXITED(exit_info)) dlclose(dl);
-				dl = NULL;
+				tests[n_tests].fun = *(test_fun *)&sym;
+				tests[n_tests].name = test_name;
+				++n_tests;
 			}
 		}
 	}
-	if (dl) dlclose(dl);
+	run_tests(tests, n_tests);
+	dlclose(dl);
 	regfree(&name_pat);
 }
 

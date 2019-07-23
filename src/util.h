@@ -28,4 +28,6 @@ pid_t safe_fork(void);
 
 void system_error(const char *prog_name);
 
+pid_t wait_nointr(int *exit_info);
+
 #endif /* UTIL_H_ */

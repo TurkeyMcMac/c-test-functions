@@ -51,3 +51,12 @@ void system_error(const char *prog_name)
 	perror(": System error: ");
 	exit(EXIT_FAILURE);
 }
+
+pid_t wait_nointr(int *exit_info)
+{
+	pid_t pid;
+	do {
+		pid = wait(exit_info);
+	} while (pid < 0 && errno == EINTR);
+	return pid;
+}
