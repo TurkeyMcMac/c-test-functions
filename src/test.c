@@ -29,6 +29,7 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 
 int run_tests(struct test *tests, size_t n_tests)
 {
+	int errnum; // For swapping out errno
 	for (size_t i = 0; i < n_tests; ++i) {
 		int pipefds[2];
 		if (pipe(pipefds)) {
@@ -45,7 +46,7 @@ int run_tests(struct test *tests, size_t n_tests)
 	size_t n_left = n_tests;
 	int exit_info;
 	pid_t pid;
-	while (n_left > 0 && (pid = wait_nointr(&exit_info)) >= 0) {
+	while (n_left > 0 && (errno = 0, pid = wait_nointr(&exit_info)) >= 0) {
 		struct test *test = NULL;
 		for (size_t i = 0; i < n_tests; ++i) {
 			if (tests[i].pid == pid) {
@@ -63,7 +64,7 @@ int run_tests(struct test *tests, size_t n_tests)
 		size_t line_cap = 0;
 		ssize_t len;
 		printf("-- %s --\n", test->name);
-		while ((len = getline(&line, &line_cap, out)) > 0)
+		while ((errno = 0, len = getline(&line, &line_cap, out)) > 0)
 		{
 			if (line[len - 1] != '\n') {
 				line[len] = '\n';
@@ -71,8 +72,16 @@ int run_tests(struct test *tests, size_t n_tests)
 			}
 			printf("%s:%.*s", test->name, (int)len, line);
 		}
+		errnum = errno;
 		fclose(out);
+		errno = errnum;
 		test->read_fd = -1;
+		if (errno && errno != EWOULDBLOCK) {
+			errnum = errno;
+			printf("f\n");
+			errno = errnum;
+			goto error;
+		}
 		int exit_code = WEXITSTATUS(exit_info);
 		int core_dump = WCOREDUMP(exit_info);
 		printf("%s %s   Exit code: %d%s\n",
@@ -82,7 +91,7 @@ int run_tests(struct test *tests, size_t n_tests)
 			exit_code,
 			core_dump ? "   Core dumped" : "");
 	}
-	if (errno != ECHILD) goto error;
+	if (errno && errno != ECHILD) goto error;
 	return 0;
 
 error:
