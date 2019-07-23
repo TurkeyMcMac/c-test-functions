@@ -14,6 +14,8 @@
 #define SUFFIX STRINGIFY(CTF_SUFFIX)
 #define SUFFIX_SIZE 11
 
+int dup2_nointr(int orig, int new);
+
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	size_t append, size_t item_size);
 

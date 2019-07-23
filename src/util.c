@@ -1,8 +1,18 @@
 #include "util.h"
 #include "xalloc.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+int dup2_nointr(int orig, int new)
+{
+	int ret;
+	do {
+		ret = dup2(orig, new);
+	} while (ret < 0 && errno == EINTR);
+	return ret;
+}
 
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	size_t append, size_t item_size)
