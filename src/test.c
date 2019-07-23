@@ -12,6 +12,7 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 	pid_t pid;
 	if ((pid = safe_fork())) {
 		if (pid < 0) return -1;
+		close(out_fd);
 		*test_pid = pid;
 		return 0;
 	} else {
@@ -30,13 +31,15 @@ int run_tests(struct test *tests, size_t n_tests)
 {
 	for (size_t i = 0; i < n_tests; ++i) {
 		int pipefds[2];
-		pipe(pipefds);
+		if (pipe(pipefds)) {
+			n_tests = i;
+			goto error;
+		}
 		tests[i].read_fd = pipefds[0];
 		if (start_test(tests[i].fun, &tests[i].pid, pipefds[1])) {
-			while (i--) {
-				close(tests[i].read_fd);
-			}
-			return -1;
+			tests[i].pid = -1;
+			n_tests = i + 1;
+			goto error;
 		}
 	}
 	size_t n_left = n_tests;
@@ -52,9 +55,10 @@ int run_tests(struct test *tests, size_t n_tests)
 			}
 		}
 		if (!test) continue;
-		if (fcntl(test->read_fd, F_SETFL, O_NONBLOCK)) return -1;
+		test->pid = -1;
+		if (fcntl(test->read_fd, F_SETFL, O_NONBLOCK)) goto error;
 		FILE *out = fdopen(test->read_fd, "r");
-		if (!out) return -1;
+		if (!out) goto error;
 		char *line = NULL;
 		size_t line_cap = 0;
 		ssize_t len;
@@ -68,6 +72,7 @@ int run_tests(struct test *tests, size_t n_tests)
 			printf("%s:%.*s", test->name, (int)len, line);
 		}
 		fclose(out);
+		test->read_fd = -1;
 		int exit_code = WEXITSTATUS(exit_info);
 		int core_dump = WCOREDUMP(exit_info);
 		printf("%s %s   Exit code: %d%s\n",
@@ -77,6 +82,13 @@ int run_tests(struct test *tests, size_t n_tests)
 			exit_code,
 			core_dump ? "   Core dumped" : "");
 	}
-	if (errno != ECHILD) return -1;
+	if (errno != ECHILD) goto error;
 	return 0;
+
+error:
+	for (size_t i = 0; i < n_tests; ++i) {
+		if (tests[i].read_fd >= 0) close(tests[i].read_fd);
+		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
+	}
+	return -1;
 }
