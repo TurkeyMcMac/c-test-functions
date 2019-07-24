@@ -12,7 +12,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 {
 	int pipefds[2];
 	pid_t pid;
-	char *arg1 = path_to_arg(fpath);
+	char *arg1 = dll_name_to_path(fpath);
 	if (pipe(pipefds)) {
 		free(arg1);
 		return -1;

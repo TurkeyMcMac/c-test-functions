@@ -5,6 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+char *dll_name_to_path(const char *name)
+{
+	size_t size = strlen(name) + 1;
+	if (*name == '/') {
+		return memcpy(xmalloc(size), name, size);
+	} else {
+		char *path = xmalloc(size + 2);
+		memcpy(path, "./", 2);
+		memcpy(path + 2, name, size);
+		return path;
+	}
+}
+
 int dup2_nointr(int orig, int new)
 {
 	int ret;
@@ -24,19 +37,6 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 		*list = xrealloc(*list, *cap * item_size);
 	}
 	return (char *)*list + old_len * item_size;
-}
-
-char *path_to_arg(const char *path)
-{
-	size_t path_len = strlen(path);
-	char *arg = xmalloc(path_len + 3);
-	if (*path == '-') {
-		memcpy(arg, "./", 2);
-		memcpy(arg + 2, path, path_len + 1);
-	} else {
-		memcpy(arg, path, path_len + 1);
-	}
-	return arg;
 }
 
 pid_t safe_fork(void)

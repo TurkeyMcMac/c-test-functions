@@ -14,6 +14,8 @@
 #define SUFFIX STRINGIFY(CTF_SUFFIX)
 #define SUFFIX_SIZE 11
 
+char *dll_name_to_path(const char *name);
+
 int dup2_nointr(int orig, int new);
 
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
@@ -21,8 +23,6 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 
 #define GROW(list, len, cap, append) \
 	grow_((void **)&(list), &(len), &(cap), append, sizeof *(list))
-
-char *path_to_arg(const char *path);
 
 pid_t safe_fork(void);
 
