@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	size_t n_tests = 0;
 	void *dl = dlopen(options.path, RTLD_LAZY);
 	if (!dl) {
-		fprintf(stderr, "%s: %s: %s",
+		fprintf(stderr, "%s: %s: %s\n",
 			argv[0], options.path, dlerror());
 		exit(EXIT_FAILURE);
 	}
