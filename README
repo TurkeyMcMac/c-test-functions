@@ -1,0 +1,14 @@
+         ________________________________________
+        /                                       /
+       / .----.    ____________    __________  /
+      / /     /   /     /     /   /         / /
+     / /               /         /           /
+    / /               /         /-----/     /
+   / /               /         /           /
+  / /     /         /         /           /
+ / *_____*        _/_       _/_          /
+/______________________________________ /
+
+C Test Functions aims to provide an easy and simple way of testing C projects.
+The unit tests are included directly in the files next to the tested behavior.
+The tests are run by the `ctf` program on the compiled executable.
