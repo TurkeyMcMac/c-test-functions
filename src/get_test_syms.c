@@ -29,6 +29,10 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		char *argv[] = {arg0, arg1, NULL};
 		if (dup2_nointr(pipefds[1], STDOUT_FILENO) < 0)
 			exit(EXIT_FAILURE);
+		// Redirect stderr to silence it. Probably symbols won't show up
+		// within it, so I think it'll be fine.
+		if (dup2_nointr(pipefds[1], STDERR_FILENO) < 0)
+			exit(EXIT_FAILURE);
 		close(pipefds[0]);
 		close(pipefds[1]);
 		execvp("nm", argv);
