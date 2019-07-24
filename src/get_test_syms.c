@@ -27,10 +27,8 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 	} else {
 		char arg0[] = "nm";
 		char *argv[] = {arg0, arg1, NULL};
-		errno = 0;
-		while (dup2(pipefds[1], STDOUT_FILENO) < 0 && errno == EINTR)
-			;
-		if (errno) exit(EXIT_FAILURE);
+		if (dup2_nointr(pipefds[1], STDOUT_FILENO) < 0)
+			exit(EXIT_FAILURE);
 		close(pipefds[0]);
 		close(pipefds[1]);
 		execvp("nm", argv);
