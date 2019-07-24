@@ -47,8 +47,8 @@ pid_t safe_fork(void)
 
 void system_error(const char *prog_name)
 {
-	fprintf(stderr, "%s", prog_name);
-	perror(": System error: ");
+	fprintf(stderr, "%s: ", prog_name);
+	perror("System error");
 	exit(EXIT_FAILURE);
 }
 
