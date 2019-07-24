@@ -28,6 +28,8 @@ static void print_help(const char *prog_name, FILE *to)
 {
 	print_usage(prog_name, to);
 	fprintf(to,
+"Run test functions in an executable.\n"
+"Options:\n"
 "  -h      Print this help information and exit.\n"
 "  -l      Just list test names; run no tests.\n"
 "  -n pat  Add the Basic Regular Expression <pat> to the matching list. Only\n"
@@ -35,12 +37,14 @@ static void print_help(const char *prog_name, FILE *to)
 "  -p num  Set the number of test-running processes to <num>. If unset, it\n"
 "          equals the number of tests.\n"
 "  -v      Print version information and exit.\n"
+"The file argument is required unless -h or -v is specified. It is the source\n"
+"of all the test functions.\n"
 	);
 }
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.0.0\n", prog_name);
+	fprintf(to, "%s version 0.0.1\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[]) {
