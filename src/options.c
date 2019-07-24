@@ -44,7 +44,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.0.2\n", prog_name);
+	fprintf(to, "%s version 0.0.3\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[]) {
@@ -88,5 +88,6 @@ void parse_options(int argc, char *argv[]) {
 	if (!options.path) {
 		fprintf(stderr, "%s: No file provided\n", argv[0]);
 		print_usage(argv[0], stderr);
+		exit(EXIT_FAILURE);
 	}
 }
