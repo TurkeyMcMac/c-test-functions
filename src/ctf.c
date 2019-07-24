@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	run_tests(tests, n_tests);
+	if (run_tests(tests, n_tests)) system_error(argv[0]);
 	dlclose(dl);
 	regfree(&name_pat);
 }
