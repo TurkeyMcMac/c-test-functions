@@ -1,4 +1,4 @@
-exe = ctf
+exe = ceeteef
 c-flags = $(CFLAGS) -Ilib
 
 all: $(exe)
