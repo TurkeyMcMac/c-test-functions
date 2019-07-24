@@ -53,19 +53,3 @@ int main(int argc, char *argv[])
 	dlclose(dl);
 	regfree(&name_pat);
 }
-
-#include <assert.h>
-
-CTF_TEST(test_1,
-	printf("test 1\n");
-)
-
-CTF_TEST(test_2,
-	printf("test 2\n");
-	assert(1 == 2);
-)
-
-CTF_TEST(test_3,
-	printf("test 3\n");
-	return 2;
-)
