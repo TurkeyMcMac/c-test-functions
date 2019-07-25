@@ -14,6 +14,13 @@
 #	define CTF_END_EXTERN_C
 #endif
 
+/* CTF_TEST(name, ...) makes a test function with the given name and a body
+ * formed of the remaining arguments. This will only be present with the symbol
+ * CTF_TESTS_ENABLED defined. The body fails if it crashes or returns nonzero.
+ * If it has no return statement and does not crash, it will still succeed. Make
+ * sure that you are exporting symbols by default in the compiled executable, as
+ * the test symbols must be present for the test runner to pick up on the tests.
+ */
 #if CTF_TESTS_ENABLED
 #	define CTF_TEST(name, ...) \
 	CTF_EXTERN_C \
