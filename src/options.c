@@ -44,7 +44,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.0.6\n", prog_name);
+	fprintf(to, "%s version 0.0.7\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[]) {
@@ -89,5 +89,9 @@ void parse_options(int argc, char *argv[]) {
 		fprintf(stderr, "%s: No file provided\n", argv[0]);
 		print_usage(argv[0], stderr);
 		exit(EXIT_FAILURE);
+	} else if (argv[optind + 1]) {
+		fprintf(stderr, "%s: Warning: Arguments after file ignored\n",
+			argv[0]);
+		print_usage(argv[0], stderr);
 	}
 }
