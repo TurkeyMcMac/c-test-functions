@@ -13,6 +13,12 @@
 #	define CTF_EXTERN_C
 #	define CTF_END_EXTERN_C
 #endif
+/* To help protect against LTO when possible: */
+#ifdef __GNUC__
+#	define CTF_EXPORT __attribute__((used))
+#else
+#	define CTF_EXPORT
+#endif
 
 /* CTF_TEST(name, ...) makes a test function with the given name and a body
  * formed of the remaining arguments. This will only be present with the symbol
@@ -27,7 +33,7 @@
 	/* Call the function name from the test hook so that assertion failures
 	 * report that function name: */ \
 	static int name(void) { __VA_ARGS__; return 0; } \
-	int CTF_CIRCUMFIX(name)(void) { return name(); } \
+	CTF_EXPORT int CTF_CIRCUMFIX(name)(void) { return name(); } \
 	CTF_END_EXTERN_C
 #else
 #	define CTF_TEST(name, ...)

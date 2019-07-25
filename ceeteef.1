@@ -12,8 +12,10 @@ ceeteef - Run C/C++ unit tests
 compilation by the API. See the \fBAPI\fR section for more. The source of these
 symbols is \fIfile\fR, which is a required argument unless \fB-h\fR or \fB-v\fR
 is given. When compiling the executable, make sure symbols are exported by
-default. This probably won't be a problem in most cases. C++ name mangling is
-automatically prevented by the library.
+default. This probably won't be a problem in most cases. However, link-time
+optimization will remove the test functions. The library tries to mitigate this,
+but the air-tight solution is to not use LTO when testing. C++ name mangling is
+handled automatically.
 
 .SH OPTIONS
 
@@ -47,6 +49,9 @@ that, a function name. \fIbody\fR is a function body. The brackets around the
 body are unnecessary. If the function does not crash nor return non-zero, the
 test has succeeded. Otherwise, it fails. If there is no return statement at the
 end of the function, the test succeeds when it reaches the end.
+
+As mentioned above, to preserve the test symbols, it is best to use little
+optimization, and especially not link-time optimization.
 
 .SH EXIT STATUS
 
