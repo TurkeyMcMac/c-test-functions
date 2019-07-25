@@ -27,6 +27,22 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 	return -1;
 }
 
+static void print_exit_info(const struct test *test, int exit_info)
+{
+	int exit_code = WEXITSTATUS(exit_info);
+	int core_dump = WCOREDUMP(exit_info);
+	if (WIFEXITED(exit_info) && WEXITSTATUS(exit_info)) {
+		printf("%s FAILED   Exited with status %d\n",
+			test->name, WEXITSTATUS(exit_info));
+	} else if (WIFSIGNALED(exit_info)) {
+		printf("%s FAILED   Terminated by signal %d%s\n",
+			test->name, WTERMSIG(exit_info),
+			WCOREDUMP(exit_info) ? "   Core dumped" : "");
+	} else {
+		printf("%s SUCCEEDED\n", test->name);
+	}
+}
+
 int run_tests(struct test *tests, size_t n_tests)
 {
 	int errnum; // For swapping out errno
@@ -76,20 +92,8 @@ int run_tests(struct test *tests, size_t n_tests)
 		fclose(out);
 		errno = errnum;
 		test->read_fd = -1;
-		if (errno && errno != EWOULDBLOCK) {
-			errnum = errno;
-			printf("f\n");
-			errno = errnum;
-			goto error;
-		}
-		int exit_code = WEXITSTATUS(exit_info);
-		int core_dump = WCOREDUMP(exit_info);
-		printf("%s %s   Exit code: %d%s\n",
-			test->name,
-			exit_code == 0 && !core_dump ?
-				"SUCCEEDED" : "FAILED",
-			exit_code,
-			core_dump ? "   Core dumped" : "");
+		if (errno && errno != EWOULDBLOCK) goto error;
+		print_exit_info(test, exit_info);
 	}
 	if (errno && errno != ECHILD) goto error;
 	return 0;
