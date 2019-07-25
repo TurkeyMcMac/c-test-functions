@@ -1,0 +1,56 @@
+.TH ceeteef 1 "24 July 2019" "version 0.0.6"
+
+.SH NAME
+ceeteef - Run C/C++ unit tests
+
+.SH SYNOPSIS
+\fBceeteef\fR [\fB-h\fR] [\fB-l\fR] [\fB-n\fR \fIpat\fR]... [\fB-p\fR \fInum\fR]
+[\fB-v\fR] [--] \fIfile\fR
+
+.SH DESCRIPTION
+\fBceeteef\fR runs C/C++ unit tests. It reads test symbols created during
+compilation by the API. See the \fBAPI\fR section for more. The source of these
+symbols is \fIfile\fR, which is a required argument unless \fB-h\fR or \fB-v\fR
+is given. When compiling the executable, make sure symbols are exported by
+default. This probably won't be a problem in most cases. C++ name mangling is
+automatically prevented by the library.
+
+.SH OPTIONS
+
+.IP \fB-h\fR
+Print this help information and exit.
+
+.IP \fB-l\fR
+Just list test names; run no tests.
+
+.IP "\fB-n\fR \fIpat\fR"
+Add the Basic Regular Expression \fIpat\fR to the matching list. Only tests
+which match one of these patterns are run. If there are no patterns, all tests
+are run.
+
+.IP "\fB-p\fR \fInum\fR"
+Set the number of test-running processes to \fInum\fR. If unset, it equals the
+number of tests.
+
+.IP \fB-v\fR
+Print version information and exit.
+
+.SH API
+
+To use the library, include \fBlibctf.h\fR either locally (by copying the header
+from somewhere) or from your include path. The header also contains more usage
+information.
+
+Create your tests with \fBCTF_TEST\fR(\fIfunction_name\fR, \fIbody\fR). Compile
+your program with \fBCTF_TESTS_ENABLED\fR defined. \fIfunction_name\fR is just
+that, a function name. \fIbody\fR is a function body. The brackets around the
+body are unnecessary. If the function does not crash nor return non-zero, the
+test has succeeded. Otherwise, it fails. If there is no return statement at the
+end of the function, the test succeeds when it reaches the end.
+
+.SH EXIT STATUS
+
+\fBceeteef\fR exits with 0 on success or a non-zero value on failure.
+
+.SH AUTHOR
+Written by Jude Melton-Houghton (jwmhjwmh@gmail.com).
