@@ -21,7 +21,7 @@ struct test {
 
 /* Run n_tests tests simultaneously. all the `name` and `fun` members must be
  * initialized. On success, 0 is returned. -1 means failure. Test output is
- * printed to stdout. */
-int run_tests(struct test *tests, size_t n_tests);
+ * printed to stdout. The maximum test run time is `timeout` seconds. */
+int run_tests(struct test *tests, size_t n_tests, int timeout);
 
 #endif /* TEST_H_ */

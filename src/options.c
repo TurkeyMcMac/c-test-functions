@@ -36,6 +36,8 @@ static void print_help(const char *prog_name, FILE *to)
 "          tests which match one of these patterns are run.\n"
 "  -p num  Set the number of test-running processes to <num>. If unset, it\n"
 "          equals the number of tests.\n"
+"  -t sec  Set the maximum test runtime to <sec> seconds. <sec> is a positive\n"
+"          integer. After this time, a test fails.\n"
 "  -v      Print version information and exit.\n"
 "The file argument is required unless -h or -v is specified. It is the source\n"
 "of all the test functions.\n"
@@ -44,7 +46,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.0.8\n", prog_name);
+	fprintf(to, "%s version 0.1.8\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[]) {
@@ -53,6 +55,7 @@ void parse_options(int argc, char *argv[]) {
 		"l"  // just list test names
 		"n:" // add name pattern
 		"p:" // set number of test processes
+		"t:" // test timeout
 		"v"  // print version
 	;
 	size_t name_pats_cap = 0;
@@ -75,6 +78,9 @@ void parse_options(int argc, char *argv[]) {
 			break;
 		case 'p':
 			options.n_procs = atoi(optarg);
+			break;
+		case 't':
+			options.timeout = atoi(optarg);
 			break;
 		case 'v':
 			print_version(argv[0], stdout);

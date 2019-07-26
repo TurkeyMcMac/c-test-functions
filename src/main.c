@@ -30,12 +30,13 @@ static void do_tests(const char *prog_name, struct test *tests, size_t n_tests)
 	if (options.n_procs > 0) {
 		size_t n_procs = options.n_procs;
 		while (n_tests > n_procs) {
-			if (run_tests(tests, n_procs)) system_error(prog_name);
+			if (run_tests(tests, n_procs, options.timeout))
+				system_error(prog_name);
 			tests += n_procs;
 			n_tests -= n_procs;
 		}
 	}
-	if (run_tests(tests, n_tests)) system_error(prog_name);
+	if (run_tests(tests, n_tests, options.timeout)) system_error(prog_name);
 }
 
 int main(int argc, char *argv[])

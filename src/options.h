@@ -10,6 +10,8 @@ extern struct options {
 	 * all tests match. Otherwise, one pattern must match. */
 	regex_t *name_pats;
 	size_t n_name_pats;
+	/* Maximum test run time, in seconds. */
+	int timeout;
 	/* The maximum number of test-running processes at a time. */
 	int n_procs;
 	/* If true, the tests should be listed, not run. */

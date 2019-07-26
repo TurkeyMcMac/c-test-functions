@@ -4,8 +4,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 {
@@ -43,9 +45,44 @@ static void print_exit_info(const struct test *test, int exit_info)
 	}
 }
 
-int run_tests(struct test *tests, size_t n_tests)
+static int write_test(struct test *test)
 {
 	int errnum; // For swapping out errno
+	test->pid = -1;
+	if (fcntl(test->read_fd, F_SETFL, O_NONBLOCK)) return -1;
+	FILE *out = fdopen(test->read_fd, "r");
+	if (!out) return -1;
+	char *line = NULL;
+	size_t line_cap = 0;
+	ssize_t len;
+	printf("-- %s --\n", test->name);
+	while ((errno = 0, len = getline(&line, &line_cap, out)) > 0)
+	{
+		if (line[len - 1] != '\n') {
+			line[len] = '\n';
+			++len;
+		}
+		printf("%s:%.*s", test->name, (int)len, line);
+	}
+	errnum = errno;
+	fclose(out);
+	errno = errnum;
+	test->read_fd = -1;
+	if (errno && errno != EWOULDBLOCK && errno != EINTR) return -1;
+	return 0;
+}
+
+static volatile sig_atomic_t n_alarms;
+
+static void receive_alarm(int signum)
+{
+	(void)signum;
+	++n_alarms;
+}
+
+int run_tests(struct test *tests, size_t n_tests, int timeout)
+{
+	int retval = 0;
 	for (size_t i = 0; i < n_tests; ++i) {
 		int pipefds[2];
 		if (pipe(pipefds)) {
@@ -62,7 +99,19 @@ int run_tests(struct test *tests, size_t n_tests)
 	size_t n_left = n_tests;
 	int exit_info;
 	pid_t pid;
-	while (n_left > 0 && (errno = 0, pid = wait_nointr(&exit_info)) >= 0) {
+	struct sigaction old_action;
+	if (timeout > 0) {
+		n_alarms = 0;
+		struct sigaction action;
+		memset(&action, 0, sizeof(action));
+		action.sa_handler = receive_alarm;
+		sigaction(SIGALRM, &action, &old_action);
+		alarm(timeout);
+	}
+	sigset_t set, old_set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGALRM);
+	while (n_left > 0 && (errno = 0, pid = wait(&exit_info)) >= 0) {
 		struct test *test = NULL;
 		for (size_t i = 0; i < n_tests; ++i) {
 			if (tests[i].pid == pid) {
@@ -72,36 +121,47 @@ int run_tests(struct test *tests, size_t n_tests)
 			}
 		}
 		if (!test) continue;
-		test->pid = -1;
-		if (fcntl(test->read_fd, F_SETFL, O_NONBLOCK)) goto error;
-		FILE *out = fdopen(test->read_fd, "r");
-		if (!out) goto error;
-		char *line = NULL;
-		size_t line_cap = 0;
-		ssize_t len;
-		printf("-- %s --\n", test->name);
-		while ((errno = 0, len = getline(&line, &line_cap, out)) > 0)
-		{
-			if (line[len - 1] != '\n') {
-				line[len] = '\n';
-				++len;
-			}
-			printf("%s:%.*s", test->name, (int)len, line);
-		}
-		errnum = errno;
-		fclose(out);
-		errno = errnum;
-		test->read_fd = -1;
-		if (errno && errno != EWOULDBLOCK) goto error;
+		sigprocmask(SIG_BLOCK, &set, &old_set);
+		write_test(test);
 		print_exit_info(test, exit_info);
+		if (n_alarms > 0) goto timed_out;
+		sigprocmask(SIG_SETMASK, &old_set, NULL);
 	}
-	if (errno && errno != ECHILD) goto error;
-	return 0;
+	switch (errno) {
+	case 0:
+	case ECHILD:
+		break;
+	case EINTR:
+		if (n_alarms > 0) goto timed_out;
+		/* FALLTHROUGH */
+	default:
+		goto error;
+	}
+	goto remove_alarm;
+
+timed_out:
+	for (size_t i = 0; i < n_tests; ++i) {
+		struct test *test = &tests[i];
+		if (test->read_fd >= 0 && test->pid >= 0) {
+			kill(test->pid, SIGTERM);
+			write_test(test);
+			printf("%s FAILED   Timed out in %ds\n",
+				test->name, n_alarms * timeout);
+		}
+	}
+remove_alarm:
+	if (timeout > 0) {
+		alarm(0);
+		sigaction(SIGALRM, &old_action, NULL);
+	}
+	return retval;
 
 error:
 	for (size_t i = 0; i < n_tests; ++i) {
 		if (tests[i].read_fd >= 0) close(tests[i].read_fd);
 		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
 	}
-	return -1;
+	if (timeout > 0) sigaction(SIGALRM, &old_action, NULL);
+	retval = -1;
+	goto remove_alarm;
 }
