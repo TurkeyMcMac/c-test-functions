@@ -20,7 +20,8 @@ static void make_regex(const char *prog_name, regex_t *re, const char *pat)
 
 static void print_usage(const char *prog_name, FILE *to)
 {
-	fprintf(to, "Usage: %s [-h] [-l] [-n pat]... [-p num] [-v] [--] file\n",
+	fprintf(to, "Usage: %s [-h] [-l] [-n pat]... [-p num] [-t sec] [-v]"
+			" [--] file\n",
 		prog_name);
 }
 

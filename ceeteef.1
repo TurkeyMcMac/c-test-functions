@@ -5,7 +5,7 @@ ceeteef - Run C/C++ unit tests
 
 .SH SYNOPSIS
 \fBceeteef\fR [\fB-h\fR] [\fB-l\fR] [\fB-n\fR \fIpat\fR]... [\fB-p\fR \fInum\fR]
-[\fB-v\fR] [--] \fIfile\fR
+[\fB-t\fR \fIsec\fR] [\fB-v\fR] [--] \fIfile\fR
 
 .SH DESCRIPTION
 \fBceeteef\fR runs C/C++ unit tests. It reads test symbols created during
@@ -35,6 +35,10 @@ are run.
 .IP "\fB-p\fR \fInum\fR"
 Set the number of test-running processes to \fInum\fR. If unset, it equals the
 number of tests.
+
+.IP "\fB-t\fR \fIsec\fR"
+Set the maximum test runtime to \fIsec\fR seconds. \fIsec\fR is a positive
+integer. After this time, a test fails.
 
 .IP \fB-v\fR
 Print version information and exit.
