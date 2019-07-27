@@ -1,4 +1,4 @@
-.TH ceeteef 1 "24 July 2019" "version 0.1.8"
+.TH ceeteef 1 "24 July 2019" "version 0.2.8"
 
 .SH NAME
 ceeteef - Run C/C++ unit tests
@@ -28,9 +28,8 @@ Print this help information and exit.
 Just list test names; run no tests.
 
 .IP "\fB-n\fR \fIpat\fR"
-Add the Basic Regular Expression \fIpat\fR to the matching list. Only tests
-which match one of these patterns are run. If there are no patterns, all tests
-are run.
+Match test names with the regular expression \fIpat\fR, running only ones that
+match. If none is set, all tests run.
 
 .IP "\fB-p\fR \fInum\fR"
 Set the number of test-running processes to \fInum\fR. If unset, it equals the

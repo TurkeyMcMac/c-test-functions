@@ -6,10 +6,10 @@ extern struct options {
 	/* The path of the executable. Might not contain a slash, which is
 	 * relevant to dlopen. */
 	const char *path;
-	/* The patterns which a test name must match to be run. If there are 0,
-	 * all tests match. Otherwise, one pattern must match. */
-	regex_t *name_pats;
-	size_t n_name_pats;
+	/* The pattern which a test name must match to be run. If not
+	 * `has_name_pat`, all tests are run. */
+	regex_t name_pat;
+	bool has_name_pat;
 	/* Maximum test run time, in seconds. */
 	int timeout;
 	/* The maximum number of test-running processes at a time. */

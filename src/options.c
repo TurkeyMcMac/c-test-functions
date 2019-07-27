@@ -1,5 +1,5 @@
 #include "options.h"
-#include "util.h"
+//#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,7 +8,7 @@ struct options options;
 
 static void make_regex(const char *prog_name, regex_t *re, const char *pat)
 {
-	int err = regcomp(re, pat, REG_NOSUB);
+	int err = regcomp(re, pat, REG_EXTENDED | REG_NOSUB);
 	if (err) {
 		char errbuf[256];
 		regerror(err, re, errbuf, sizeof(errbuf));
@@ -20,8 +20,8 @@ static void make_regex(const char *prog_name, regex_t *re, const char *pat)
 
 static void print_usage(const char *prog_name, FILE *to)
 {
-	fprintf(to, "Usage: %s [-h] [-l] [-n pat]... [-p num] [-t sec] [-v]"
-			" [--] file\n",
+	fprintf(to, "Usage: %s [-h] [-l] [-n pat] [-p num] [-t sec] [-v] [--]"
+			" file\n",
 		prog_name);
 }
 
@@ -33,8 +33,8 @@ static void print_help(const char *prog_name, FILE *to)
 "Options:\n"
 "  -h      Print this help information and exit.\n"
 "  -l      Just list test names; run no tests.\n"
-"  -n pat  Add the Basic Regular Expression <pat> to the matching list. Only\n"
-"          tests which match one of these patterns are run.\n"
+"  -n pat  Match test names with the regular expression <pat>, running only\n"
+"          the ones that match. If none is set, all tests run.\n"
 "  -p num  Set the number of test-running processes to <num>. If unset, it\n"
 "          equals the number of tests.\n"
 "  -t sec  Set the maximum test runtime to <sec> seconds. <sec> is a positive\n"
@@ -47,7 +47,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.1.8\n", prog_name);
+	fprintf(to, "%s version 0.2.8\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[]) {
@@ -59,9 +59,7 @@ void parse_options(int argc, char *argv[]) {
 		"t:" // test timeout
 		"v"  // print version
 	;
-	size_t name_pats_cap = 0;
-	options.n_name_pats = 0;
-	options.name_pats = NULL;
+	options.has_name_pat = false;
 	options.n_procs = -1;
 	options.just_list = false;
 	char opt;
@@ -74,8 +72,8 @@ void parse_options(int argc, char *argv[]) {
 			options.just_list = true;
 			break;
 		case 'n':
-			make_regex(argv[0], (regex_t *)GROW(options.name_pats,
-				options.n_name_pats, name_pats_cap, 1), optarg);
+			options.has_name_pat = true;
+			make_regex(argv[0], &options.name_pat, optarg);
 			break;
 		case 'p':
 			options.n_procs = atoi(optarg);

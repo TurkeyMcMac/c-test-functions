@@ -16,13 +16,8 @@
 
 static bool name_matches(const char *name)
 {
-	if (options.n_name_pats == 0) return true;
-	for (size_t i = 0; i < options.n_name_pats; ++i) {
-		if (!regexec(&options.name_pats[i], name, 0, NULL, 0)) {
-			return true;
-		}
-	}
-	return false;
+	return !options.has_name_pat
+	    || !regexec(&options.name_pat, name, 0, NULL, 0);
 }
 
 static void do_tests(const char *prog_name, struct test *tests, size_t n_tests)
