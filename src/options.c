@@ -49,7 +49,8 @@ static void print_version(const char *prog_name, FILE *to)
 	fprintf(to, "%s version 0.2.8\n", prog_name);
 }
 
-void parse_options(int argc, char *argv[]) {
+void parse_options(int argc, char *argv[])
+{
 	static const char opts[] =
 		"h"  // print help
 		"l"  // just list test names
