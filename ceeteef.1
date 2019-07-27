@@ -1,17 +1,16 @@
-.TH ceeteef 1 "24 July 2019" "version 0.2.8"
+.TH ceeteef 1 "24 July 2019" "version 0.3.8"
 
 .SH NAME
 ceeteef - Run C/C++ unit tests
 
 .SH SYNOPSIS
 \fBceeteef\fR [\fB-h\fR] [\fB-l\fR] [\fB-n\fR \fIpat\fR] [\fB-p\fR \fInum\fR]
-[\fB-t\fR \fIsec\fR] [\fB-v\fR] [--] \fIfile\fR
+[\fB-t\fR \fIsec\fR] [\fB-v\fR] [--] \fIfile\fR...
 
 .SH DESCRIPTION
 \fBceeteef\fR runs C/C++ unit tests. It reads test symbols created during
 compilation by the API. See \fBctf\fR(3) for more. The source of these symbols
-is \fIfile\fR, which is a required argument unless \fB-h\fR or \fB-v\fR is
-given.
+is \fIfile\fR, of which there may be multiple.
 
 .SH OPTIONS
 

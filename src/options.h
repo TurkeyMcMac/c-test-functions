@@ -5,7 +5,8 @@
 extern struct options {
 	/* The path of the executable. Might not contain a slash, which is
 	 * relevant to dlopen. */
-	const char *path;
+	char **paths;
+	size_t n_paths;
 	/* The pattern which a test name must match to be run. If not
 	 * `has_name_pat`, all tests are run. */
 	regex_t name_pat;

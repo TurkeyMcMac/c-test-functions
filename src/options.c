@@ -20,7 +20,7 @@ static void make_regex(const char *prog_name, regex_t *re, const char *pat)
 static void print_usage(const char *prog_name, FILE *to)
 {
 	fprintf(to, "Usage: %s [-h] [-l] [-n pat] [-p num] [-t sec] [-v] [--]"
-			" file\n",
+			" file...\n",
 		prog_name);
 }
 
@@ -39,14 +39,14 @@ static void print_help(const char *prog_name, FILE *to)
 "  -t sec  Set the maximum test runtime to <sec> seconds. <sec> is a positive\n"
 "          integer. After this time, a test fails.\n"
 "  -v      Print version information and exit.\n"
-"The file argument is required unless -h or -v is specified. It is the source\n"
-"of all the test functions.\n"
+"The <file> argument is the source of test function symbols. There may be\n"
+"zero or more files given.\n"
 	);
 }
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.2.8\n", prog_name);
+	fprintf(to, "%s version 0.3.8\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[])
@@ -89,14 +89,6 @@ void parse_options(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-	options.path = argv[optind];
-	if (!options.path) {
-		fprintf(stderr, "%s: No file provided\n", argv[0]);
-		print_usage(argv[0], stderr);
-		exit(EXIT_FAILURE);
-	} else if (argv[optind + 1]) {
-		fprintf(stderr, "%s: Warning: Arguments after file ignored\n",
-			argv[0]);
-		print_usage(argv[0], stderr);
-	}
+	options.paths = argv + optind;
+	options.n_paths = argc - optind;
 }
