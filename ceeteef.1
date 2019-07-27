@@ -9,15 +9,9 @@ ceeteef - Run C/C++ unit tests
 
 .SH DESCRIPTION
 \fBceeteef\fR runs C/C++ unit tests. It reads test symbols created during
-compilation by the API. See the \fBAPI\fR section for more. The source of these
-symbols is \fIfile\fR, which is a required argument unless \fB-h\fR or \fB-v\fR
-is given. When compiling the executable, make sure symbols are exported by
-default. This probably won't be a problem in most cases. However, link-time
-optimization will remove the test functions. The library tries to mitigate this,
-but the air-tight solution is to not use LTO when testing. C++ name mangling is
-handled automatically.
-
-For more detail, see the \fBAPI\fR and \fBEXAMPLE\fR sections.
+compilation by the API. See \fBctf\fR(3) for more. The source of these symbols
+is \fIfile\fR, which is a required argument unless \fB-h\fR or \fB-v\fR is
+given.
 
 .SH OPTIONS
 
@@ -41,24 +35,6 @@ integer. After this time, a test fails.
 
 .IP \fB-v\fR
 Print version information and exit.
-
-.SH API
-
-To use the library, include \fBlibctf.h\fR either locally (by copying the header
-from somewhere) or from your include path. The header also contains more usage
-information.
-
-Create your tests with \fBCTF_TEST\fR(\fIfunction_name\fR, \fIbody\fR). Compile
-your program with \fBCTF_TESTS_ENABLED\fR defined. \fIfunction_name\fR is just
-that, a function name. \fIbody\fR is a function body. The brackets around the
-body are unnecessary. If the function does not crash nor return non-zero, the
-test has succeeded. Otherwise, it fails. If there is no return statement at the
-end of the function, the test succeeds when it reaches the end.
-
-As mentioned above, to preserve the test symbols, it is best to use little
-optimization, and especially not link-time optimization.
-
-See the \fBEXAMPLE\fR section below.
 
 .SH EXAMPLE
 
@@ -107,12 +83,13 @@ line 8.
 hello_world FAILED   Terminated by signal 6   Core dumped
 .PD
 
-As you can see, both stderr and stdout are captured. The test crashed due to an
-assertion failure, making it fail.
-
 .SH EXIT STATUS
 
 \fBceeteef\fR exits with 0 on success or a non-zero value on failure.
+
+.SH SEE ALSO
+
+\fBctf\fR(3)
 
 .SH AUTHOR
 Written by Jude Melton-Houghton (jwmhjwmh@gmail.com).
