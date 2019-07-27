@@ -31,8 +31,6 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 
 static void print_exit_info(const struct test *test, int exit_info)
 {
-	int exit_code = WEXITSTATUS(exit_info);
-	int core_dump = WCOREDUMP(exit_info);
 	if (WIFEXITED(exit_info) && WEXITSTATUS(exit_info)) {
 		printf("%s FAILED   Exited with status %d\n",
 			test->name, WEXITSTATUS(exit_info));

@@ -1,5 +1,5 @@
 exe = ceeteef
-c-flags = $(CFLAGS) -Ilib
+c-flags = -Ilib -std=c99 -Wall -Wextra -Wpedantic $(CFLAGS)
 
 all: $(exe)
 
