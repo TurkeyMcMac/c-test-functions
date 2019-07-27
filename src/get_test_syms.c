@@ -126,15 +126,13 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	return 0;
 }
 
-int get_test_syms(const char *path, char ***names, size_t *n_names)
+int get_test_syms(const char *path, char ***names, size_t *n_names,
+	size_t *names_cap)
 {
 	pid_t pid;
 	int fd;
-	size_t names_cap = 0;
-	*names = NULL;
-	*n_names = 0;
 	if (start_nm_proc(path, &pid, &fd)) return -1;
-	if (scan_test_names(fd, names, n_names, &names_cap)) {
+	if (scan_test_names(fd, names, n_names, names_cap)) {
 		close(fd);
 		return -1;
 	}

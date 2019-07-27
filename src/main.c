@@ -38,9 +38,9 @@ int main(int argc, char *argv[])
 {
 	parse_options(argc, argv);
 	options.path = dll_name_to_path(options.path);
-	char **names;
-	size_t n_names;
-	if (get_test_syms(options.path, &names, &n_names))
+	char **names = NULL;
+	size_t n_names = 0, names_cap = 0;
+	if (get_test_syms(options.path, &names, &n_names, &names_cap))
 		system_error(argv[0]);
 	struct test *tests = xmalloc(n_names * sizeof(*tests));
 	size_t n_tests = 0;
