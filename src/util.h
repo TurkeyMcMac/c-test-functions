@@ -38,7 +38,4 @@ pid_t safe_fork(void);
 /* Print a system error from `errno` with the program name `prog_name`. */
 void system_error(const char *prog_name);
 
-/* Like the wait syscall, but ignoring interrupts. */
-pid_t wait_nointr(int *exit_info);
-
 #endif /* UTIL_H_ */
