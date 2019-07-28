@@ -16,6 +16,9 @@ The tests are run by the `ceeteef` program on the compiled executable.
 USAGE
 =====
 
+Install the command with `make install` or by manually copying the manual pages,
+the header, and the executable into your preferred directories.
+
 To write a test, include the `libctf.h` header in the `lib` directory. Now write
 a test:
 
