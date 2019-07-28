@@ -12,6 +12,19 @@ ceeteef - Run C/C++ unit tests
 compilation by the API. See \fBctf\fR(3) for more. The source of these symbols
 is \fIfile\fR, of which there may be multiple.
 
+Test output begins with "-- \fItest_name\fR --". Lines of the output are in the
+format "\fItest_name\fR:Line of text". The last exit info line takes two forms.
+If the test succeeded, the output is "\fItest_name\fR SUCCEEDED". On failure,
+the output is "\fItest_name\fR FAILED   \fIfailure_info\fR". There are several
+possible formats of \fIfailure_info\fR:
+.IP "Exited with status \fIexit_status\fR"
+The test returned or exited with the non-zero value \fIexit_status\fR.
+.IP "Terminated by signal \fIsig_num\fR   [Core dumped]"
+The signal identified by \fIsig_num\fR terminated the test. If the core was
+dumped, "Core dumped" is tacked onto the end.
+.IP "Timed out in \fIrun_time\fRs"
+The test exceeded the maximum run time of \fIrun_time\fR seconds.
+
 .SH OPTIONS
 
 .IP \fB-h\fR
