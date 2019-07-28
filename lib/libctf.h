@@ -43,7 +43,9 @@
 #	define CTF_TEST(name, ...)
 #endif
 
+/* The part of a test symbol before the identifier. */
 #define CTF_PREFIX Ctf_TEST___
+/* The part of a test symbol after the identifier. */
 #define CTF_SUFFIX ___TEST_ctF
 
 /* All that follows is not a public interface. */
