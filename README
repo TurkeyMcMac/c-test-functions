@@ -14,8 +14,18 @@ The unit tests are included directly in the files next to the tested behavior.
 The tests are run by the `ceeteef` program on the compiled executable. Other
 than the tests themselves, you need not write anything new.
 
+SYSTEM REQUIREMENTS
+===================
+This is meant for POSIX systems, specifically POSIX.1-2008. This includes, at
+least for now, the `nm` command.
+
+I think it would be possible to port it to Windows (without using a Unix
+emulator,) but I have not the knowledge, the motivation, nor the computer.
+
 USAGE
 =====
+
+Running `make` creates the executable.
 
 Install the command with `make install` or by manually copying the manual pages,
 the header, and the executable into your preferred directories.
