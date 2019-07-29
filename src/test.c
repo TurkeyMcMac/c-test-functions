@@ -1,5 +1,3 @@
-// To get glibc < 2.10 to stop griping about getline; mostly portable:
-#define _GNU_SOURCE
 #include "test.h"
 #include "util.h"
 #include "xalloc.h"
