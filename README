@@ -32,7 +32,8 @@ This will only exist when the symbol CTF_TESTS_ENABLED is defined. If so, a
 static function with the name `test_name` is created, so you can't reuse the
 name. The executable `ceeteef` depends on test symbols in your program existing
 in the compiled version, so make sure symbols are exported by default in
-whatever way possible.
+whatever way possible. This may require adding the `-shared` option, i.e.,
+making a shared library.
 
 Now run the tests:
 

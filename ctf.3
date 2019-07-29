@@ -29,7 +29,8 @@ the test succeeds when it reaches the end.
 Output from a test to \fIstdout\fR and \fIstdout\fR will be displayed, including
 messages about assertion failures and so on.
 
-To preserve the test symbols, it is best to use little optimization, and
+To preserve the test symbols, you may need to make a shared library with the
+\fB-shared\fR option to the compiler. It is best to use little optimization, and
 especially not link-time optimization, which removes "unused" symbols. The
 library tries to mitigate this, but the best way around it is to not optimize
 with your tests.
@@ -65,7 +66,7 @@ Now compile and run it:
 
 .PD 0
 .P
- $ cc -DCTF_TESTS_ENABLED test.c
+ $ cc -DCTF_TESTS_ENABLED -shared test.c # -shared exposes the symbols
 .P
  $ ceeteef a.out
 .P

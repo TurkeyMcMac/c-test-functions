@@ -1,4 +1,4 @@
-.TH ceeteef 1 "24 July 2019" "version 0.3.8"
+.TH ceeteef 1 "24 July 2019" "version 0.3.9"
 
 .SH NAME
 ceeteef - Run C/C++ unit tests
@@ -79,7 +79,7 @@ Now compile and run it:
 
 .PD 0
 .P
- $ cc -DCTF_TESTS_ENABLED test.c
+ $ cc -DCTF_TESTS_ENABLED -shared test.c # -shared exposes the symbols
 .P
  $ ceeteef a.out
 .P

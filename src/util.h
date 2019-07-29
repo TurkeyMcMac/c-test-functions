@@ -24,6 +24,11 @@ char *dll_name_to_path(const char *name);
 /* Like dup2, but repeats until it is uninterrupted. */
 int dup2_nointr(int orig, int new);
 
+/* Find `part` inside `within`, returning the starting address that matches or
+ * NULL if not found. */
+void *find(const void *within, size_t within_size,
+	const void *part, size_t part_size);
+
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	size_t append, size_t item_size);
 

@@ -27,6 +27,18 @@ int dup2_nointr(int orig, int new)
 	return ret;
 }
 
+void *find(const void *within, size_t within_size,
+	const void *part, size_t part_size)
+{
+	if (within_size >= part_size) {
+		for (size_t i = 0; i <= within_size - part_size; ++i) {
+			void *chunk = (char *)within + i;
+			if (!memcmp(part, chunk, part_size)) return chunk;
+		}
+	}
+	return NULL;
+}
+
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	size_t append, size_t item_size)
 {

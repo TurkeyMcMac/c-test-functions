@@ -43,7 +43,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 static void confirm_name(char ***names, size_t *n_names, size_t *names_cap,
 	char *name, size_t name_len)
 {
-	if (memmem(name, name_len + 1, SUFFIX, SUFFIX_SIZE + 1)) {
+	if (find(name, name_len + 1, SUFFIX, SUFFIX_SIZE + 1)) {
 		char **push = GROW(*names, *n_names, *names_cap, 1);
 		*push = name;
 	} else {
@@ -93,7 +93,7 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 			}
 		}
 		while (n_search > 0) {
-			char *sym = memmem(search, n_search, prefix,
+			char *sym = find(search, n_search, prefix,
 				PREFIX_SIZE);
 			if (sym) {
 				size_t search_left = n_search + search - sym;

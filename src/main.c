@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 			void *sym = dlsym(dl, names[j]);
 			if (sym) {
 				char *test_name = names[j] + PREFIX_SIZE;
-				*(char *)memmem(test_name,
+				*(char *)find(test_name,
 					strlen(test_name) + 1, SUFFIX,
 					SUFFIX_SIZE + 1) = '\0';
 				if (name_matches(test_name)) {

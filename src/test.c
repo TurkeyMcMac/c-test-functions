@@ -1,3 +1,5 @@
+// To get glibc < 2.10 to stop griping about getline; mostly portable:
+#define _GNU_SOURCE
 #include "test.h"
 #include "util.h"
 #include "xalloc.h"
@@ -8,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 {
@@ -37,7 +41,12 @@ static void print_exit_info(const struct test *test, int exit_info)
 	} else if (WIFSIGNALED(exit_info)) {
 		printf("%s FAILED   Terminated by signal %d%s\n",
 			test->name, WTERMSIG(exit_info),
-			WCOREDUMP(exit_info) ? "   Core dumped" : "");
+#ifdef WCOREDUMP
+			WCOREDUMP(exit_info) ? "   Core dumped" : ""
+#else
+			""
+#endif
+		);
 	} else {
 		printf("%s SUCCEEDED\n", test->name);
 	}
