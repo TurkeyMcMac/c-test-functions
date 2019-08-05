@@ -62,3 +62,17 @@ test_name FAILED   Terminated by signal 6   Core dumped
 
 For further information, consult the man pages `ceeteef.1` and `ctf.3` or the
 help information from `ceeteef -h`.
+
+OUTPUT PARSING
+==============
+
+I didn't add a whole lot of built-in output switches because I figure that's the
+Unix way or something. The output is fairly easy to parse.
+
+Listing only test outcomes (with color if -s is given to ceeteef):
+
+ $ ceeteef <tests> | grep -Ev '^--|^[[:alnum:]_]+:'
+
+Listing only test failure outcomes:
+
+ $ ceeteef <tests> | grep -Ev '^--|^[[:alnum:]_]+:|SUCCEEDED'
