@@ -16,11 +16,13 @@ than the tests themselves, you need not write anything new.
 
 NAMING
 ======
+
 I called the command `ceeteef` rather than `ctf` because `ctf` seemed like a
 short name for a non-essential command.
 
 SYSTEM REQUIREMENTS
 ===================
+
 This is meant for POSIX systems, specifically POSIX.1-2008. This includes, at
 least for now, the `nm` command.
 
