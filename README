@@ -69,7 +69,13 @@ OUTPUT PARSING
 I didn't add a whole lot of built-in output switches because I figure that's the
 Unix way or something. The output is fairly easy to parse.
 
-Listing only test outcomes (with color if -s is given to ceeteef):
+All of the following scripts can have styles enabled with `ceeteef`'s -s option.
+
+Listing all output of just the failing tests:
+
+ $ ceeteef <tests> | awk '/^-/{o=""}{o=o$0"\n"}/^[^- ]+ [^ ]*FA/{printf"%s",o}'
+
+Listing only test outcomes:
 
  $ ceeteef <tests> | grep -Ev '^--|^[[:alnum:]_]+:'
 
