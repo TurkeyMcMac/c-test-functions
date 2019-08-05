@@ -3,7 +3,8 @@
 
 #include <stdbool.h>
 
-/* Set styles on or off, overriding the default that depends on whether the
+/* Set styles on or off. If not called and the environment variable NO_COLOR is
+ * defined, styles are off. If not, styles are decided based upon whether the
  * output is a tty. */
 void set_styles(bool on);
 

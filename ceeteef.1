@@ -43,8 +43,9 @@ number of tests.
 
 
 .IP \fB-s\fR
-Force output styles (color, etc.) on. By default, these are output only if
-stdout is not piped.
+Force output styles (color, etc.) on. If you define NO_COLOR in the environment
+and use not -s nor -S, no styles are output. By default, styles are output only
+if stdout is not piped.
 
 .IP \fB-S\fR
 Force output styles off.

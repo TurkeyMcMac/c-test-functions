@@ -1,5 +1,6 @@
 #include "style.h"
 #include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 static bool styles_set = false;
@@ -9,6 +10,8 @@ static bool doing_styles(void)
 {
 	if (styles_set) {
 		return styles_on;
+	} else if (getenv("NO_COLOR")) {
+		return false;
 	} else {
 		int errnum = errno;
 		bool on = isatty(STDOUT_FILENO);
