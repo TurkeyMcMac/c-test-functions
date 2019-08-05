@@ -1,4 +1,5 @@
 #include "test.h"
+#include "style.h"
 #include "util.h"
 #include "xalloc.h"
 #include <errno.h>
@@ -10,6 +11,18 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
+static void print_failed(const char *name)
+{
+	printf("%s%s %sFAILED%s   ",
+		style_bold(), name, style_fg_red(), style_end_all());
+}
+
+static void print_succeeded(const char *name)
+{
+	printf("%s%s %sSUCCEEDED%s\n",
+		style_bold(), name, style_fg_green(), style_end_all());
+}
 
 static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 {
@@ -34,11 +47,11 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 static void print_exit_info(const struct test *test, int exit_info)
 {
 	if (WIFEXITED(exit_info) && WEXITSTATUS(exit_info)) {
-		printf("%s FAILED   Exited with status %d\n",
-			test->name, WEXITSTATUS(exit_info));
+		print_failed(test->name);
+		printf("Exited with status %d\n", WEXITSTATUS(exit_info));
 	} else if (WIFSIGNALED(exit_info)) {
-		printf("%s FAILED   Terminated by signal %d%s\n",
-			test->name, WTERMSIG(exit_info),
+		print_failed(test->name);
+		printf("Terminated by signal %d%s\n", WTERMSIG(exit_info),
 #ifdef WCOREDUMP
 			WCOREDUMP(exit_info) ? "   Core dumped" : ""
 #else
@@ -46,7 +59,7 @@ static void print_exit_info(const struct test *test, int exit_info)
 #endif
 		);
 	} else {
-		printf("%s SUCCEEDED\n", test->name);
+		print_succeeded(test->name);
 	}
 }
 
@@ -60,7 +73,7 @@ static int write_test(struct test *test)
 	char *line = NULL;
 	size_t line_cap = 0;
 	ssize_t len;
-	printf("-- %s --\n", test->name);
+	printf("-- %s%s%s --\n", style_bold(), test->name, style_end_all());
 	while ((errno = 0, len = getline(&line, &line_cap, out)) > 0)
 	{
 		if (line[len - 1] != '\n') {
@@ -150,8 +163,8 @@ timed_out:
 		if (test->read_fd >= 0 && test->pid >= 0) {
 			kill(test->pid, SIGTERM);
 			write_test(test);
-			printf("%s FAILED   Timed out in %ds\n",
-				test->name, n_alarms * timeout);
+			print_failed(test->name);
+			printf("Timed out in %ds\n", n_alarms * timeout);
 		}
 	}
 remove_alarm:
