@@ -10,12 +10,12 @@
 
 /* the string version of the test symbol prefix and its length. */
 #define PREFIX STRINGIFY(CTF_PREFIX)
-#define PREFIX_SIZE 11
+#define PREFIX_SIZE 5
 #define SHIFT_KEEP (PREFIX_SIZE - 1)
 
 /* the string version of the test symbol suffix and its length. */
 #define SUFFIX STRINGIFY(CTF_SUFFIX)
-#define SUFFIX_SIZE 11
+#define SUFFIX_SIZE 5
 
 /* Return a functional copy of the executable name `name` containing at least 1
  * slash. */

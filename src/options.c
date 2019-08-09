@@ -49,7 +49,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.4.9\n", prog_name);
+	fprintf(to, "%s version 0.5.9\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[])

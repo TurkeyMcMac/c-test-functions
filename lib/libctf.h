@@ -42,9 +42,9 @@
 #endif
 
 /* The part of a test symbol before the identifier. */
-#define CTF_PREFIX Ctf_TEST___
+#define CTF_PREFIX CTf__
 /* The part of a test symbol after the identifier. */
-#define CTF_SUFFIX ___TEST_ctF
+#define CTF_SUFFIX CtF__
 
 /* All that follows is not a public interface. */
 
