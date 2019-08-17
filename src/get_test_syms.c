@@ -37,7 +37,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		close(pipefds[1]);
 		execvp("nm", argv);
 	}
-	return 0;
+	return -1;
 }
 
 static void confirm_name(char ***names, size_t *n_names, size_t *names_cap,
