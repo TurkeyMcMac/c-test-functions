@@ -66,7 +66,7 @@ void parse_options(int argc, char *argv[])
 	options.has_name_pat = false;
 	options.n_procs = -1;
 	options.just_list = false;
-	char opt;
+	int opt;
 	while ((opt = getopt(argc, argv, opts)) >= 0) {
 		switch (opt) {
 		case 'h':
