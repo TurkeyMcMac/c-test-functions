@@ -6,7 +6,7 @@ bin-dir = /usr/local/bin
 man-dir-1 = /usr/local/share/man/man1
 man-dir-3 = /usr/local/share/man/man3
 library-dir = /usr/local/include
-c-flags = -Ilib -std=c99 -Wall -Wextra -Wpedantic -D_POSIX_C_SOURCE=200809L \
+c-flags = -Ilib -std=c99 -Wall -Wextra -Wpedantic -D_POSIX_C_SOURCE=200112L \
 	$(CFLAGS)
 linkage = -ldl
 

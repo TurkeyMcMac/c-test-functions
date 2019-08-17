@@ -51,6 +51,14 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	return (char *)*list + old_len * item_size;
 }
 
+ssize_t read_nointr(int fd, void *buf, size_t count)
+{
+	ssize_t n_read;
+	while ((n_read = read(fd, buf, count)) < 0 && errno == EINTR)
+		;
+	return n_read;
+}
+
 pid_t safe_fork(void)
 {
 	if (fflush(NULL)) return -1;

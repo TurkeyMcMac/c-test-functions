@@ -37,6 +37,8 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 #define GROW(list, len, cap, append) \
 	grow_((void **)&(list), &(len), &(cap), append, sizeof *(list))
 
+ssize_t read_nointr(int fd, void *buf, size_t count);
+
 /* Fork after flushing all buffers to avoid duplicated output. */
 pid_t safe_fork(void);
 

@@ -65,28 +65,37 @@ static void print_exit_info(const struct test *test, int exit_info)
 
 static int write_test(struct test *test)
 {
-	int errnum; // For swapping out errno
+	int fd = test->read_fd;
 	test->pid = -1;
-	if (fcntl(test->read_fd, F_SETFL, O_NONBLOCK)) return -1;
-	FILE *out = fdopen(test->read_fd, "r");
-	if (!out) return -1;
-	char *line = NULL;
-	size_t line_cap = 0;
-	ssize_t len;
+	if (fcntl(fd, F_SETFL, O_NONBLOCK)) return -1;
 	printf("-- %s%s%s --\n", style_bold(), test->name, style_end_all());
-	while ((errno = 0, len = getline(&line, &line_cap, out)) > 0)
-	{
-		if (line[len - 1] != '\n') {
-			line[len] = '\n';
-			++len;
+	bool line_begun = true;
+	char buf[BUFSIZ];
+	ssize_t n_read = sizeof(buf);
+	char *head = buf + n_read;
+	do {
+		if (head >= buf + n_read) {
+			errno = 0;
+			n_read = read_nointr(fd, buf, sizeof(buf));
+			if (n_read <= 0) break;
+			head = buf;
 		}
-		printf("%s:%.*s", test->name, (int)len, line);
+		if (line_begun) {
+			printf("%s:", test->name);
+		}
+		size_t n_left = n_read + buf - head;
+		char *nl = memchr(head, '\n', n_left);
+		line_begun = nl != NULL;
+		size_t line_len = line_begun ? (size_t)(nl - head + 1) : n_left;
+		fwrite(head, 1, line_len, stdout);
+		head = head + line_len;
+	} while (head < buf + n_read || n_read == sizeof(buf));
+	if (!line_begun) {
+		putchar('\n');
 	}
-	errnum = errno;
-	fclose(out);
-	errno = errnum;
 	test->read_fd = -1;
-	if (errno && errno != EWOULDBLOCK && errno != EINTR) return -1;
+	close(fd);
+	errno = 0;
 	return 0;
 }
 
