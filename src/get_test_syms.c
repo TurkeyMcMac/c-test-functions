@@ -12,13 +12,8 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 {
 	int pipefds[2];
 	pid_t pid;
-	char *arg1 = dll_name_to_path(fpath);
-	if (pipe(pipefds)) {
-		free(arg1);
-		return -1;
-	}
+	if (pipe(pipefds)) return -1;
 	if ((pid = safe_fork())) {
-		free(arg1);
 		if (pid < 0) return -1;
 		close(pipefds[1]);
 		*pidp = pid;
@@ -26,6 +21,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
 		return 0;
 	} else {
 		char arg0[] = "nm";
+		char *arg1 = dll_name_to_path(fpath);
 		char *argv[] = {arg0, arg1, NULL};
 		if (dup2_nointr(pipefds[1], STDOUT_FILENO) < 0)
 			exit(EXIT_FAILURE);
