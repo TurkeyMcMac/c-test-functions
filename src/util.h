@@ -2,6 +2,7 @@
 #define UTIL_H_
 
 #include <libctf.h>
+#include <stdio.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -37,6 +38,10 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
  * the number used. No arguments are references. */
 #define GROW(list, len, cap, append) \
 	grow_((void **)&(list), &(len), &(cap), append, sizeof *(list))
+
+/* Read all the lines from fd, give them the prefix, and write them to out. 0
+ * means success. A negative return value means failure with errno set. */
+int prefix_lines(const char *prefix, int fd, FILE *out);
 
 ssize_t read_nointr(int fd, void *buf, size_t count);
 

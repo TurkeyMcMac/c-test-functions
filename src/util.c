@@ -2,6 +2,7 @@
 #include "xalloc.h"
 #include <errno.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -61,6 +62,36 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 		*list = xrealloc(*list, *cap * item_size);
 	}
 	return (char *)*list + old_len * item_size;
+}
+
+int prefix_lines(const char *prefix, int fd, FILE *out)
+{
+	size_t prefix_len = strlen(prefix);
+	bool line_begun = true;
+	char buf[BUFSIZ];
+	ssize_t n_read = sizeof(buf);
+	char *head = buf + n_read;
+	do {
+		if (head >= buf + n_read) {
+			errno = 0;
+			n_read = read_nointr(fd, buf, sizeof(buf));
+			if (n_read <= 0) break;
+			head = buf;
+		}
+		if (line_begun) {
+			fwrite(prefix, 1, prefix_len, out);
+		}
+		size_t n_left = n_read + buf - head;
+		char *nl = memchr(head, '\n', n_left);
+		line_begun = nl != NULL;
+		size_t line_len = line_begun ? (size_t)(nl - head + 1) : n_left;
+		fwrite(head, 1, line_len, out);
+		head = head + line_len;
+	} while (head < buf + n_read || n_read == sizeof(buf));
+	if (!line_begun) {
+		fputc('\n', out);
+	}
+	return 0;
 }
 
 ssize_t read_nointr(int fd, void *buf, size_t count)

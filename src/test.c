@@ -59,38 +59,23 @@ static void print_exit_info(const struct test *test, int exit_info)
 
 static int write_test(struct test *test)
 {
+	int errnum; // To swap with errno;
 	int fd = test->read_fd;
+	char *prefix = str_cat(test->name, ":");
 	test->pid = -1;
-	if (fcntl(fd, F_SETFL, O_NONBLOCK)) return -1;
+	if (fcntl(fd, F_SETFL, O_NONBLOCK)) goto error;
 	printf("-- %s%s%s --\n", style_bold(), test->name, style_end_all());
-	bool line_begun = true;
-	char buf[BUFSIZ];
-	ssize_t n_read = sizeof(buf);
-	char *head = buf + n_read;
-	do {
-		if (head >= buf + n_read) {
-			errno = 0;
-			n_read = read_nointr(fd, buf, sizeof(buf));
-			if (n_read <= 0) break;
-			head = buf;
-		}
-		if (line_begun) {
-			printf("%s:", test->name);
-		}
-		size_t n_left = n_read + buf - head;
-		char *nl = memchr(head, '\n', n_left);
-		line_begun = nl != NULL;
-		size_t line_len = line_begun ? (size_t)(nl - head + 1) : n_left;
-		fwrite(head, 1, line_len, stdout);
-		head = head + line_len;
-	} while (head < buf + n_read || n_read == sizeof(buf));
-	if (!line_begun) {
-		putchar('\n');
-	}
+	if (prefix_lines(prefix, fd, stdout)) goto error;
+	free(prefix);
 	test->read_fd = -1;
+	errnum = errno;
 	close(fd);
-	errno = 0;
+	errno = errnum;
 	return 0;
+
+error:
+	free(prefix);
+	return -1;
 }
 
 static volatile sig_atomic_t n_alarms;
