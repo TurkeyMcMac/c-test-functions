@@ -43,6 +43,12 @@ ssize_t read_nointr(int fd, void *buf, size_t count);
 /* Fork after flushing all buffers to avoid duplicated output. */
 pid_t safe_fork(void);
 
+/* Allocate a duplicate string. */
+char *str_dup(const char *str);
+
+/* Allocate a string that is str1 followed by str2 with no NULL between. */
+char *str_cat(const char *str1, const char *str2);
+
 /* Print a system error from `errno` with the program name `prog_name`. */
 void system_error(const char *prog_name);
 

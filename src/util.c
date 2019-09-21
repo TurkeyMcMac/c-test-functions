@@ -5,16 +5,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+char *str_dup(const char *str)
+{
+	size_t size = strlen(str) + 1;
+	return memcpy(xmalloc(size), str, size);
+}
+
+char *str_cat(const char *str1, const char *str2)
+{
+	size_t len1 = strlen(str1);
+	size_t size2 = strlen(str2) + 1;
+	char *cat = xmalloc(len1 + size2);
+	memcpy(cat, str1, len1);
+	memcpy(cat + len1, str2, size2);
+	return cat;
+}
+
 char *dll_name_to_path(const char *name)
 {
-	size_t size = strlen(name) + 1;
 	if (*name == '/') {
-		return memcpy(xmalloc(size), name, size);
+		return str_dup(name);
 	} else {
-		char *path = xmalloc(size + 2);
-		memcpy(path, "./", 2);
-		memcpy(path + 2, name, size);
-		return path;
+		return str_cat("./", name);
 	}
 }
 
