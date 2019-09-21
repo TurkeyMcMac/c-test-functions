@@ -2,36 +2,49 @@
 #include "util.h"
 #include "xalloc.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp)
+static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 {
+	int errnum; // For swapping with errno.
 	int pipefds[2];
+	int nm_read, nm_write, err_read, err_write;
 	pid_t pid;
 	if (pipe(pipefds)) return -1;
+	nm_read = pipefds[0];
+	nm_write = pipefds[1];
+	if (pipe(pipefds)) return -1;
+	err_read = pipefds[0];
+	err_write = pipefds[1];
 	if ((pid = safe_fork())) {
 		if (pid < 0) return -1;
-		close(pipefds[1]);
+		errnum = errno;
+		close(nm_write);
+		close(err_write);
+		errno = errnum;
 		*pidp = pid;
-		*fdp = pipefds[0];
+		*fdp = nm_read;
+		*errfdp = err_read;
 		return 0;
 	} else {
 		char arg0[] = "nm";
 		char *arg1 = dll_name_to_path(fpath);
 		char *argv[] = {arg0, arg1, NULL};
-		if (dup2_nointr(pipefds[1], STDOUT_FILENO) < 0)
-			exit(EXIT_FAILURE);
-		// Redirect stderr to silence it. Probably symbols won't show up
-		// within it, so I think it'll be fine.
-		if (dup2_nointr(pipefds[1], STDERR_FILENO) < 0)
-			exit(EXIT_FAILURE);
-		close(pipefds[0]);
-		close(pipefds[1]);
+		if (dup2_nointr(nm_write, STDOUT_FILENO) < 0) goto child_error;
+		if (dup2_nointr(err_write, STDERR_FILENO) < 0) goto child_error;
+		close(nm_read);
+		close(nm_write);
+		close(err_read);
+		close(err_write);
 		execvp("nm", argv);
+child_error:
+		perror("Failed to run \"nm\" command");
+		exit(EXIT_FAILURE);
 	}
 	return -1;
 }
@@ -122,16 +135,46 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 	return 0;
 }
 
+// If there was an error with a system call, errinfo is set to -errno. If the
+// process exited nonzero, errinfo is set to the fd of the process stderr.
 int get_test_syms(const char *path, char ***names, size_t *n_names,
-	size_t *names_cap)
+	size_t *names_cap, int *errinfo)
 {
+	int errnum; // For swapping with errno.
+	int exit_info;
 	pid_t pid;
 	int fd;
-	if (start_nm_proc(path, &pid, &fd)) return -1;
-	if (scan_test_names(fd, names, n_names, names_cap)) {
-		close(fd);
-		return -1;
-	}
+	if (start_nm_proc(path, &pid, &fd, errinfo)) goto error;
+	int scan_err = scan_test_names(fd, names, n_names, names_cap);
+	errnum = errno;
 	close(fd);
+	errno = errnum;
+	if (scan_err) goto error;
+	if (waitpid(pid, &exit_info, 0) == pid) {
+		if ((WIFEXITED(exit_info) && WEXITSTATUS(exit_info))
+		 || WIFSIGNALED(exit_info))
+			// errinfo is set to the stderr fd.
+			return -1;
+	} else {
+		// Ignore the error
+		errno = errnum;
+	}
 	return 0;
+
+error:
+	*errinfo = -errno;
+	return -1;
+}
+
+void print_test_syms_error(const char *prog_name, int errinfo)
+{
+	if (errinfo < 0) {
+		errno = -errinfo;
+		system_error(prog_name);
+	} else {
+		int err_read_fd = errinfo;
+		fcntl(err_read_fd, F_SETFL, O_NONBLOCK);
+		prefix_lines(str_cat(prog_name, ": "), err_read_fd, stderr);
+		exit(EXIT_FAILURE);
+	}
 }

@@ -43,8 +43,9 @@ int main(int argc, char *argv[])
 	size_t n_tests = 0, tests_cap = 0;
 	for (size_t i = 0; i < options.n_paths; ++i) {
 		char *path = dll_name_to_path(options.paths[i]);
-		if (get_test_syms(path, &names, &n_names, &names_cap))
-			system_error(argv[0]);
+		int errinfo;
+		if (get_test_syms(path, &names, &n_names, &names_cap, &errinfo))
+			print_test_syms_error(argv[0], errinfo);
 		void *dl = dlopen(path, RTLD_LAZY);
 		if (!dl) {
 			fprintf(stderr, "%s: %s: %s\n",
