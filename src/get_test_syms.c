@@ -50,6 +50,7 @@ error_pipe_err:
 	close_void(nm_read);
 	close_void(nm_write);
 error_pipe_nm:
+	*errfdp = -1; // An invalid but harmless fd to try and close.
 	return -1;
 }
 
