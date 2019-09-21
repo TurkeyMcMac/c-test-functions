@@ -2,6 +2,7 @@
 #define UTIL_H_
 
 #include <libctf.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 /* Evaluate the argument and convert it to a string. */
@@ -44,5 +45,10 @@ pid_t safe_fork(void);
 
 /* Print a system error from `errno` with the program name `prog_name`. */
 void system_error(const char *prog_name);
+
+/* If a system doesn't have WCOREDUMP, assume the core was not dumped. */
+#ifndef WCOREDUMP
+#	define WCOREDUMP(status) ((status) & 0)
+#endif
 
 #endif /* UTIL_H_ */

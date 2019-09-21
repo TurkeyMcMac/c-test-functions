@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 static void print_failed(const char *name)
 {
@@ -52,12 +51,7 @@ static void print_exit_info(const struct test *test, int exit_info)
 	} else if (WIFSIGNALED(exit_info)) {
 		print_failed(test->name);
 		printf("Terminated by signal %d%s\n", WTERMSIG(exit_info),
-#ifdef WCOREDUMP
-			WCOREDUMP(exit_info) ? "   Core dumped" : ""
-#else
-			""
-#endif
-		);
+			WCOREDUMP(exit_info) ? "   Core dumped" : "");
 	} else {
 		print_succeeded(test->name);
 	}
