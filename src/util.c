@@ -31,7 +31,7 @@ char *str_cat(const char *str1, const char *str2)
 
 char *dll_name_to_path(const char *name)
 {
-	if (*name == '/') {
+	if (*name != '-' && strchr(name, '/')) {
 		return str_dup(name);
 	} else {
 		return str_cat("./", name);

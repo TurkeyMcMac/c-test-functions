@@ -23,7 +23,7 @@
 void close_void(int fd);
 
 /* Return a functional copy of the executable name `name` containing at least 1
- * slash. */
+ * slash and having a first character other than '-'. */
 char *dll_name_to_path(const char *name);
 
 /* Like dup2, but repeats until it is uninterrupted. */
