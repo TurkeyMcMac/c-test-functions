@@ -30,8 +30,9 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 		return 0;
 	} else {
 		char arg0[] = "nm";
-		char *arg1 = dll_name_to_path(fpath);
-		char *argv[] = {arg0, arg1, NULL};
+		char arg1[] = "-P";
+		char *arg2 = dll_name_to_path(fpath);
+		char *argv[] = {arg0, arg1, arg2, NULL};
 		if (dup2_nointr(nm_write, STDOUT_FILENO) < 0) goto child_error;
 		if (dup2_nointr(err_write, STDERR_FILENO) < 0) goto child_error;
 		// Not closing the read ends here disables SIGPIPE.
@@ -86,7 +87,7 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 		if (wip_sym) {
 			search = buf;
 			n_search -= buf - buf_stored;
-			char *end = memchr(search, '\n', n_search);
+			char *end = memchr(search, ' ', n_search);
 			if (end) {
 				size_t n_added = end - search;
 				char *more = GROW(wip_sym, wip_sym_len,
@@ -111,7 +112,7 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 				PREFIX_SIZE);
 			if (sym) {
 				size_t search_left = n_search + search - sym;
-				char *sym_end = memchr(sym + PREFIX_SIZE, '\n',
+				char *sym_end = memchr(sym + PREFIX_SIZE, ' ',
 					search_left - PREFIX_SIZE);
 				if (sym_end) {
 					size_t sym_len = sym_end - sym;
