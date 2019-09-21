@@ -19,6 +19,9 @@
 #define SUFFIX STRINGIFY(CTF_SUFFIX)
 #define SUFFIX_SIZE 5
 
+/* Just like close(fd), but returns void and does not alter errno. */
+void close_void(int fd);
+
 /* Return a functional copy of the executable name `name` containing at least 1
  * slash. */
 char *dll_name_to_path(const char *name);

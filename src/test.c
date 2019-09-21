@@ -28,7 +28,7 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 	pid_t pid;
 	if ((pid = safe_fork())) {
 		if (pid < 0) return -1;
-		close(out_fd);
+		close_void(out_fd);
 		*test_pid = pid;
 		return 0;
 	} else {
@@ -59,7 +59,6 @@ static void print_exit_info(const struct test *test, int exit_info)
 
 static int write_test(struct test *test)
 {
-	int errnum; // To swap with errno;
 	int fd = test->read_fd;
 	char *prefix = str_cat(test->name, ":");
 	test->pid = -1;
@@ -68,9 +67,7 @@ static int write_test(struct test *test)
 	if (prefix_lines(prefix, fd, stdout)) goto error;
 	free(prefix);
 	test->read_fd = -1;
-	errnum = errno;
-	close(fd);
-	errno = errnum;
+	close_void(fd);
 	return 0;
 
 error:
@@ -164,7 +161,7 @@ remove_alarm:
 
 error:
 	for (size_t i = 0; i < n_tests; ++i) {
-		if (tests[i].read_fd >= 0) close(tests[i].read_fd);
+		if (tests[i].read_fd >= 0) close_void(tests[i].read_fd);
 		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
 	}
 	if (timeout > 0) sigaction(SIGALRM, &old_action, NULL);

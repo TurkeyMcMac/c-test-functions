@@ -6,6 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+void close_void(int fd)
+{
+	int errnum = errno;
+	close(fd);
+	errno = errnum;
+}
+
 char *str_dup(const char *str)
 {
 	size_t size = strlen(str) + 1;

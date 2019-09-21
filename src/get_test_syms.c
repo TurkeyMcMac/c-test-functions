@@ -11,7 +11,6 @@
 
 static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 {
-	int errnum; // For swapping with errno.
 	int pipefds[2];
 	int nm_read, nm_write, err_read, err_write;
 	pid_t pid;
@@ -23,10 +22,8 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 	err_write = pipefds[1];
 	if ((pid = safe_fork())) {
 		if (pid < 0) goto error_fork;
-		errnum = errno;
-		close(nm_write);
-		close(err_write);
-		errno = errnum;
+		close_void(nm_write);
+		close_void(err_write);
 		*pidp = pid;
 		*fdp = nm_read;
 		*errfdp = err_read;
@@ -47,11 +44,11 @@ child_error:
 	}
 
 error_fork:
-	close(err_read);
-	close(err_write);
+	close_void(err_read);
+	close_void(err_write);
 error_pipe_err:
-	close(nm_read);
-	close(nm_write);
+	close_void(nm_read);
+	close_void(nm_write);
 error_pipe_nm:
 	return -1;
 }
@@ -147,16 +144,14 @@ static int scan_test_names(int in_fd, char ***names, size_t *n_names,
 int get_test_syms(const char *path, char ***names, size_t *n_names,
 	size_t *names_cap, int *errinfo)
 {
-	int errnum; // For swapping with errno.
 	int exit_info;
 	pid_t pid;
 	int fd;
 	if (start_nm_proc(path, &pid, &fd, errinfo)) goto error;
 	int scan_err = scan_test_names(fd, names, n_names, names_cap);
-	errnum = errno;
-	close(fd);
-	errno = errnum;
+	close_void(fd);
 	if (scan_err) goto error;
+	int errnum = errno;
 	if (waitpid(pid, &exit_info, 0) == pid) {
 		if ((WIFEXITED(exit_info) && WEXITSTATUS(exit_info))
 		 || WIFSIGNALED(exit_info))
@@ -169,9 +164,7 @@ int get_test_syms(const char *path, char ***names, size_t *n_names,
 	return 0;
 
 error:
-	errnum = errno;
-	close(*errinfo);
-	errno = errnum;
+	close_void(*errinfo);
 	*errinfo = -errno;
 	return -1;
 }
