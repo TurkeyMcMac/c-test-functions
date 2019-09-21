@@ -15,14 +15,14 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 	int pipefds[2];
 	int nm_read, nm_write, err_read, err_write;
 	pid_t pid;
-	if (pipe(pipefds)) return -1;
+	if (pipe(pipefds)) goto error_pipe_nm;
 	nm_read = pipefds[0];
 	nm_write = pipefds[1];
-	if (pipe(pipefds)) return -1;
+	if (pipe(pipefds)) goto error_pipe_err;
 	err_read = pipefds[0];
 	err_write = pipefds[1];
 	if ((pid = safe_fork())) {
-		if (pid < 0) return -1;
+		if (pid < 0) goto error_fork;
 		errnum = errno;
 		close(nm_write);
 		close(err_write);
@@ -37,15 +37,22 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 		char *argv[] = {arg0, arg1, NULL};
 		if (dup2_nointr(nm_write, STDOUT_FILENO) < 0) goto child_error;
 		if (dup2_nointr(err_write, STDERR_FILENO) < 0) goto child_error;
-		close(nm_read);
+		// Not closing the read ends here disables SIGPIPE.
 		close(nm_write);
-		close(err_read);
 		close(err_write);
 		execvp("nm", argv);
 child_error:
 		perror("Failed to run \"nm\" command");
 		exit(EXIT_FAILURE);
 	}
+
+error_fork:
+	close(err_read);
+	close(err_write);
+error_pipe_err:
+	close(nm_read);
+	close(nm_write);
+error_pipe_nm:
 	return -1;
 }
 
@@ -162,6 +169,9 @@ int get_test_syms(const char *path, char ***names, size_t *n_names,
 	return 0;
 
 error:
+	errnum = errno;
+	close(*errinfo);
+	errno = errnum;
 	*errinfo = -errno;
 	return -1;
 }
