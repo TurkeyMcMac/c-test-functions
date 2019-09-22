@@ -13,22 +13,6 @@ void close_void(int fd)
 	errno = errnum;
 }
 
-char *str_dup(const char *str)
-{
-	size_t size = strlen(str) + 1;
-	return memcpy(xmalloc(size), str, size);
-}
-
-char *str_cat(const char *str1, const char *str2)
-{
-	size_t len1 = strlen(str1);
-	size_t size2 = strlen(str2) + 1;
-	char *cat = xmalloc(len1 + size2);
-	memcpy(cat, str1, len1);
-	memcpy(cat + len1, str2, size2);
-	return cat;
-}
-
 char *dll_name_to_path(const char *name)
 {
 	if (*name != '-' && strchr(name, '/')) {
@@ -113,6 +97,22 @@ pid_t safe_fork(void)
 {
 	if (fflush(NULL)) return -1;
 	return fork();
+}
+
+char *str_dup(const char *str)
+{
+	size_t size = strlen(str) + 1;
+	return memcpy(xmalloc(size), str, size);
+}
+
+char *str_cat(const char *str1, const char *str2)
+{
+	size_t len1 = strlen(str1);
+	size_t size2 = strlen(str2) + 1;
+	char *cat = xmalloc(len1 + size2);
+	memcpy(cat, str1, len1);
+	memcpy(cat + len1, str2, size2);
+	return cat;
 }
 
 void system_error(const char *prog_name)

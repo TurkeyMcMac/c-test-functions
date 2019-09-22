@@ -9,6 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 
+// The number of bytes kept between fillings of the buffer
+#define SHIFT_KEEP (PREFIX_SIZE - 1)
+
 static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 {
 	int pipefds[2];
