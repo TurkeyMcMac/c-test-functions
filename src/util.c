@@ -31,6 +31,11 @@ int dup2_nointr(int orig, int new)
 	return ret;
 }
 
+void *end_of(const void *mem, size_t mem_size, size_t end_size)
+{
+	return (char *)mem + mem_size - end_size;
+}
+
 void *find(const void *within, size_t within_size,
 	const void *part, size_t part_size)
 {

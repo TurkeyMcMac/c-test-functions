@@ -61,7 +61,7 @@ error_pipe_nm:
 static void confirm_name(char ***names, size_t *n_names, size_t *names_cap,
 	char *name, size_t name_len)
 {
-	if (find(name, name_len + 1, SUFFIX, SUFFIX_SIZE + 1)) {
+	if (!memcmp(end_of(name, name_len, SUFFIX_SIZE), SUFFIX, SUFFIX_SIZE)) {
 		char **push = GROW(*names, *n_names, *names_cap, 1);
 		*push = name;
 	} else {

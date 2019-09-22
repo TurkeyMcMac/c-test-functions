@@ -16,6 +16,10 @@ char *dll_name_to_path(const char *name);
 /* Like dup2, but repeats until it is uninterrupted. */
 int dup2_nointr(int orig, int new);
 
+/* Get a pointer to the end with size `end_size` of `mem` sized `mem_size`.
+ * Precondition: `end_size` <= `mem_size` */
+void *end_of(const void *mem, size_t mem_size, size_t end_size);
+
 /* Find `part` inside `within`, returning the starting address that matches or
  * NULL if not found. */
 void *find(const void *within, size_t within_size,

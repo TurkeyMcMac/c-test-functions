@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
 			void *sym = dlsym(dl, names[j]);
 			if (sym) {
 				char *test_name = names[j] + PREFIX_SIZE;
-				test_name[strlen(test_name) - SUFFIX_SIZE] =
-					'\0';
+				*(char *)end_of(test_name, strlen(test_name),
+					SUFFIX_SIZE) = '\0';
 				if (name_matches(test_name)) {
 					struct test *test = GROW(tests, n_tests,
 						tests_cap, 1);
