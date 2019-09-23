@@ -68,7 +68,9 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	if (options.just_list) {
+	if (n_tests == 0) {
+		fprintf(stderr, "%s: No tests found\n", argv[0]);
+	} else if (options.just_list) {
 		for (size_t i = 0; i < n_tests; ++i) {
 			puts(tests[i].name);
 		}
