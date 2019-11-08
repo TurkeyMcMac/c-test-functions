@@ -142,6 +142,15 @@ int run_tests(struct test *tests, size_t n_tests, int timeout)
 	}
 	goto remove_alarm;
 
+error:
+	for (size_t i = 0; i < n_tests; ++i) {
+		if (tests[i].read_fd >= 0) close_void(tests[i].read_fd);
+		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
+	}
+	if (timeout > 0) sigaction(SIGALRM, &old_action, NULL);
+	retval = -1;
+	goto remove_alarm;
+
 timed_out:
 	for (size_t i = 0; i < n_tests; ++i) {
 		struct test *test = &tests[i];
@@ -158,13 +167,4 @@ remove_alarm:
 		sigaction(SIGALRM, &old_action, NULL);
 	}
 	return retval;
-
-error:
-	for (size_t i = 0; i < n_tests; ++i) {
-		if (tests[i].read_fd >= 0) close_void(tests[i].read_fd);
-		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
-	}
-	if (timeout > 0) sigaction(SIGALRM, &old_action, NULL);
-	retval = -1;
-	goto remove_alarm;
 }
