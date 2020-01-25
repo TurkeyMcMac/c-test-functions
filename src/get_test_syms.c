@@ -166,6 +166,7 @@ int get_test_syms(const char *path, char ***names, size_t *n_names,
 		// Ignore the error
 		errno = errnum;
 	}
+	close_void(*errinfo);
 	return 0;
 
 error:

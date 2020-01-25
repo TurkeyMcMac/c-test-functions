@@ -9,7 +9,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <sys/types.h>
+#include <sys/time.h>
+
+size_t get_max_tests(void)
+{
+	// I'm just guessing with the formula here.
+	struct rlimit fd_lim = { .rlim_cur = 0 };
+	getrlimit(RLIMIT_NOFILE, &fd_lim);
+	return fd_lim.rlim_cur > 8 ? fd_lim.rlim_cur - 8 : 1;
+}
 
 static void print_failed(const char *name)
 {
@@ -23,13 +33,13 @@ static void print_succeeded(const char *name)
 		style_bold(), name, style_fg_green(), style_end_all());
 }
 
-static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
+static int start_test(struct test *tests, size_t idx, int out_fd)
 {
 	pid_t pid;
 	if ((pid = safe_fork())) {
 		if (pid < 0) return -1;
 		close_void(out_fd);
-		*test_pid = pid;
+		tests[idx].pid = pid;
 		return 0;
 	} else {
 		if (dup2_nointr(out_fd, STDOUT_FILENO) < 0
@@ -38,7 +48,11 @@ static int start_test(test_fun fun, pid_t *test_pid, int out_fd)
 		setvbuf(stdout, NULL, _IONBF, 0);
 		setvbuf(stderr, NULL, _IONBF, 0);
 		close(out_fd);
-		exit(fun());
+		// Don't deprive the test of available file descriptors:
+		for (size_t j = 0; j <= idx; ++j) {
+			close(tests[j].read_fd);
+		}
+		exit(tests[idx].fun());
 	}
 	return -1;
 }
@@ -93,7 +107,7 @@ int run_tests(struct test *tests, size_t n_tests, int timeout)
 			goto error;
 		}
 		tests[i].read_fd = pipefds[0];
-		if (start_test(tests[i].fun, &tests[i].pid, pipefds[1])) {
+		if (start_test(tests, i, pipefds[1])) {
 			tests[i].pid = -1;
 			n_tests = i + 1;
 			goto error;
@@ -144,7 +158,6 @@ int run_tests(struct test *tests, size_t n_tests, int timeout)
 
 error:
 	for (size_t i = 0; i < n_tests; ++i) {
-		if (tests[i].read_fd >= 0) close_void(tests[i].read_fd);
 		if (tests[i].pid >= 0) kill(tests[i].pid, SIGTERM);
 	}
 	if (timeout > 0) sigaction(SIGALRM, &old_action, NULL);
@@ -165,6 +178,9 @@ remove_alarm:
 	if (timeout > 0) {
 		alarm(0);
 		sigaction(SIGALRM, &old_action, NULL);
+	}
+	for (size_t i = 0; i < n_tests; ++i) {
+		if (tests[i].read_fd >= 0) close_void(tests[i].read_fd);
 	}
 	return retval;
 }

@@ -36,20 +36,22 @@ static void print_help(const char *prog_name, FILE *to)
 "  -n pat  Match test names with the regular expression <pat>, running only\n"
 "          the ones that match. If none is set, all tests run.\n"
 "  -p num  Set the number of test-running processes to <num>. If unset, it\n"
-"          equals the number of tests.\n"
+"          equals the number of tests. This is capped at some number that\n"
+"          depends on system resources..\n"
 "  -s      Force output styles (color, etc.) on.\n"
 "  -S      Force output styles off.\n"
 "  -t sec  Set the maximum test runtime to <sec> seconds. <sec> is a positive\n"
 "          integer. After this time, a test fails.\n"
 "  -v      Print version information and exit.\n"
 "The <file> argument is the source of test function symbols. There may be\n"
-"zero or more files given.\n"
+"zero or more files given. Tests from multiple files will not be run in\n"
+"parallel.\n"
 	);
 }
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.8.0\n", prog_name);
+	fprintf(to, "%s version 0.8.1\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[])
