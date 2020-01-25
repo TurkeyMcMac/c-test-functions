@@ -36,6 +36,9 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 		char arg1[] = "-P";
 		char *arg2 = dll_name_to_path(fpath);
 		char *argv[] = {arg0, arg1, arg2, NULL};
+		// So that the program doesn't hang due to pipe buffering:
+		fcntl(err_write, F_SETFL,
+			fcntl(err_write, F_GETFL) | O_NONBLOCK);
 		if (dup2_nointr(nm_write, STDOUT_FILENO) < 0) goto child_error;
 		if (dup2_nointr(err_write, STDERR_FILENO) < 0) goto child_error;
 		// Not closing the read ends here disables SIGPIPE.
@@ -182,7 +185,8 @@ void print_test_syms_error(const char *prog_name, int errinfo)
 		system_error(prog_name);
 	} else {
 		int err_read_fd = errinfo;
-		fcntl(err_read_fd, F_SETFL, O_NONBLOCK);
+		fcntl(err_read_fd, F_SETFL,
+			fcntl(err_read_fd, F_GETFL) | O_NONBLOCK);
 		prefix_lines(str_cat(prog_name, ": "), err_read_fd, stderr);
 		exit(EXIT_FAILURE);
 	}
