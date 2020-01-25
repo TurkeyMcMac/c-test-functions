@@ -51,7 +51,7 @@ static void print_help(const char *prog_name, FILE *to)
 
 static void print_version(const char *prog_name, FILE *to)
 {
-	fprintf(to, "%s version 0.8.1\n", prog_name);
+	fprintf(to, "%s version 0.8.2\n", prog_name);
 }
 
 void parse_options(int argc, char *argv[])
@@ -68,6 +68,7 @@ void parse_options(int argc, char *argv[])
 	options.has_name_pat = false;
 	options.n_procs = -1;
 	options.just_list = false;
+	enum styles_setting styles_setting = STYLES_AUTO;
 	int opt;
 	while ((opt = getopt(argc, argv, opts)) >= 0) {
 		switch (opt) {
@@ -85,10 +86,10 @@ void parse_options(int argc, char *argv[])
 			options.n_procs = atoi(optarg);
 			break;
 		case 's':
-			set_styles(true);
+			styles_setting = STYLES_ON;
 			break;
 		case 'S':
-			set_styles(false);
+			styles_setting = STYLES_OFF;
 			break;
 		case 't':
 			options.timeout = atoi(optarg);
@@ -101,6 +102,7 @@ void parse_options(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+	init_styles(styles_setting);
 	options.paths = argv + optind;
 	options.n_paths = argc - optind;
 }

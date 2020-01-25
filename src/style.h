@@ -1,12 +1,17 @@
 #ifndef STYLE_H_
 #define STYLE_H_
 
-#include <stdbool.h>
+/* See init_styles for details. */
+enum styles_setting {
+	STYLES_AUTO,
+	STYLES_ON,
+	STYLES_OFF,
+};
 
-/* Set styles on or off. If not called and the environment variable NO_COLOR is
- * defined, styles are off. If not, styles are decided based upon whether the
- * output is a tty. */
-void set_styles(bool on);
+/* Initialize the styles system. This must be called before using other
+ * functions. STYLES_ON forces styles on, while STYLES_OFF forces them off.
+ * STYLES_AUTO decides based on predicted client preference. */
+void init_styles(enum styles_setting setting);
 
 /* Returns the bold style start if styles are on. */
 const char *style_bold(void);
