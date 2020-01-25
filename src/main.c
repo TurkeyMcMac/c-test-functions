@@ -37,6 +37,15 @@ static void do_tests(const char *prog_name, struct test *tests, size_t n_tests)
 int main(int argc, char *argv[])
 {
 	parse_options(argc, argv);
+	for (size_t i = 0; i < options.n_paths; ++i) {
+		// Quick check to see all paths exist. Prints a clearer error
+		// than the one from nm.
+		if (access(options.paths[i], F_OK)) {
+			fprintf(stderr, "%s: File not accessible: %s\n",
+				argv[0], options.paths[i]);
+			exit(EXIT_FAILURE);
+		}
+	}
 	char **names = NULL;
 	size_t n_names = 0, names_cap = 0;
 	bool found_tests = false;
