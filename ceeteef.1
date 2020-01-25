@@ -10,7 +10,8 @@ ceeteef - Run C/C++ unit tests
 .SH DESCRIPTION
 \fBceeteef\fR runs C/C++ unit tests. It reads test symbols created during
 compilation by the API. See \fBctf\fR(3) for more. The source of these symbols
-is \fIfile\fR, of which there may be multiple.
+is \fIfile\fR, of which there may be multiple. Tests from multiple files will
+not be run in parallel.
 
 Test output begins with "-- \fItest_name\fR --". Lines of the output are in the
 format "\fItest_name\fR:Line of text". The last exit info line takes two forms.
@@ -39,8 +40,7 @@ match. If none is set, all tests run.
 
 .IP "\fB-p\fR \fInum\fR"
 Set the number of test-running processes to \fInum\fR. If unset, it equals the
-number of tests.
-
+number of tests. This is capped at some number that depends on system resources.
 
 .IP \fB-s\fR
 Force output styles (color, etc.) on. If you define NO_COLOR in the environment
