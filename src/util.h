@@ -33,6 +33,13 @@ void *find(const void *within, size_t within_size,
 void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	size_t append, size_t item_size);
 
+/* Create a pipe into which the writer will first write all data then close the
+ * write end. After that, all data will be read out the read end. Regular pipes
+ * are not suited for this because they block if too much data is written in
+ * before being read out. A non-blocking but otherwise regular pipe is returned
+ * if a temporary file could not be created. */
+int one_time_pipe(int fds[2]);
+
 /* the string version of the test symbol prefix and its length. */
 #define PREFIX STRINGIFY(CTF_PREFIX)
 #define PREFIX_SIZE 5

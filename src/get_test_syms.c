@@ -2,7 +2,6 @@
 #include "util.h"
 #include "xalloc.h"
 #include <errno.h>
-#include <fcntl.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,7 +19,7 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 	if (pipe(pipefds)) goto error_pipe_nm;
 	nm_read = pipefds[0];
 	nm_write = pipefds[1];
-	if (pipe(pipefds)) goto error_pipe_err;
+	if (one_time_pipe(pipefds)) goto error_pipe_err;
 	err_read = pipefds[0];
 	err_write = pipefds[1];
 	if ((pid = safe_fork())) {
@@ -36,9 +35,6 @@ static int start_nm_proc(const char *fpath, pid_t *pidp, int *fdp, int *errfdp)
 		char arg1[] = "-P";
 		char *arg2 = dll_name_to_path(fpath);
 		char *argv[] = {arg0, arg1, arg2, NULL};
-		// So that the program doesn't hang due to pipe buffering:
-		fcntl(err_write, F_SETFL,
-			fcntl(err_write, F_GETFL) | O_NONBLOCK);
 		if (dup2_nointr(nm_write, STDOUT_FILENO) < 0) goto child_error;
 		if (dup2_nointr(err_write, STDERR_FILENO) < 0) goto child_error;
 		// Not closing the read ends here disables SIGPIPE.
@@ -185,8 +181,6 @@ void print_test_syms_error(const char *prog_name, int errinfo)
 		system_error(prog_name);
 	} else {
 		int err_read_fd = errinfo;
-		fcntl(err_read_fd, F_SETFL,
-			fcntl(err_read_fd, F_GETFL) | O_NONBLOCK);
 		prefix_lines(str_cat(prog_name, ": "), err_read_fd, stderr);
 		exit(EXIT_FAILURE);
 	}

@@ -3,7 +3,6 @@
 #include "util.h"
 #include "xalloc.h"
 #include <errno.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -76,7 +75,6 @@ static int write_test(struct test *test)
 	int fd = test->read_fd;
 	char *prefix = str_cat(test->name, ":");
 	test->pid = -1;
-	if (fcntl(fd, F_SETFL, O_NONBLOCK)) goto error;
 	printf("-- %s%s%s --\n", style_bold(), test->name, style_end_all());
 	if (prefix_lines(prefix, fd, stdout)) goto error;
 	free(prefix);
@@ -102,7 +100,7 @@ int run_tests(struct test *tests, size_t n_tests, int timeout)
 	int retval = 0;
 	for (size_t i = 0; i < n_tests; ++i) {
 		int pipefds[2];
-		if (pipe(pipefds)) {
+		if (one_time_pipe(pipefds)) {
 			n_tests = i;
 			goto error;
 		}

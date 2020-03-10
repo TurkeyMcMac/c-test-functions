@@ -1,10 +1,13 @@
 #include "util.h"
 #include "xalloc.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 void close_void(int fd)
 {
@@ -58,6 +61,32 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 		*list = xrealloc(*list, *cap * item_size);
 	}
 	return (char *)*list + old_len * item_size;
+}
+
+int one_time_pipe(int fds[2])
+{
+	char path[L_tmpnam];
+	fds[0] = fds[1] = -1;
+	for (long i = 0; i < TMP_MAX && tmpnam(path); ++i) {
+		if ((fds[0] = open(path, O_RDONLY | O_CREAT, 0600)) >= 0) {
+			if ((fds[1] = open(path, O_WRONLY)) < 0)
+				goto error_write;
+			if (unlink(path) < 0) goto error_unlink;
+			return 0;
+		} else if (errno != EEXIST) {
+			goto error_read;
+		}
+	}
+error_unlink:
+	close_void(fds[1]);
+error_write:
+	close_void(fds[0]);
+error_read:
+	// Fall back to a pipe that is non-blocking to prevent hanging.
+	if (pipe(fds)) return -1;
+	fcntl(fds[0], F_SETFL, fcntl(fds[0], F_GETFL) | O_NONBLOCK);
+	fcntl(fds[1], F_SETFL, fcntl(fds[1], F_GETFL) | O_NONBLOCK);
+	return 0;
 }
 
 int prefix_lines(const char *prefix, int fd, FILE *out)
