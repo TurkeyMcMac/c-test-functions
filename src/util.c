@@ -63,11 +63,15 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	return (char *)*list + old_len * item_size;
 }
 
+#define PIPE_FIRST_TRY ".ctfpipe"
+#define PIPE_PATH_SIZE (sizeof(PIPE_FIRST_TRY) > L_tmpnam ? \
+	sizeof(PIPE_FIRST_TRY) : L_tmpnam)
 int one_time_pipe(int fds[2])
 {
-	char path[L_tmpnam];
+	char path[PIPE_PATH_SIZE] = PIPE_FIRST_TRY;
 	fds[0] = fds[1] = -1;
-	for (long i = 0; i < TMP_MAX && tmpnam(path); ++i) {
+	for (long i = -1; i < 0 || (i < TMP_MAX && tmpnam(path)); ++i) {
+		// The first path tried is ".ctfpipe", in the current directory.
 		if ((fds[0] = open(path, O_RDONLY|O_CREAT|O_EXCL, 0600)) >= 0) {
 			if ((fds[1] = open(path, O_WRONLY)) < 0)
 				goto error_write;
