@@ -84,7 +84,7 @@ Listing only test failure outcomes:
 
  $ ceeteef <tests> | grep -Ev '^--|^[[:alnum:]_]+:|SUCCEEDED'
 
-Finally here is a more complex script. It writes the output from each test into
+Finally, here is a more complex script. It writes the output from each test into
 its own file in the directory 'logs'. The file is named after the test function.
 All old files are removed from the directory first. Here it is, in all its
 hideousness:
