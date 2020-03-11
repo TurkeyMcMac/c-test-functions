@@ -68,7 +68,7 @@ int one_time_pipe(int fds[2])
 	char path[L_tmpnam];
 	fds[0] = fds[1] = -1;
 	for (long i = 0; i < TMP_MAX && tmpnam(path); ++i) {
-		if ((fds[0] = open(path, O_RDONLY | O_CREAT, 0600)) >= 0) {
+		if ((fds[0] = open(path, O_RDONLY|O_CREAT|O_EXCL, 0600)) >= 0) {
 			if ((fds[1] = open(path, O_WRONLY)) < 0)
 				goto error_write;
 			if (unlink(path) < 0) goto error_unlink;
