@@ -63,29 +63,30 @@ void *grow_(void **list, size_t *restrict len, size_t *restrict cap,
 	return (char *)*list + old_len * item_size;
 }
 
-#define PIPE_FIRST_TRY ".ctfpipe"
-#define PIPE_PATH_SIZE (sizeof(PIPE_FIRST_TRY) > L_tmpnam ? \
-	sizeof(PIPE_FIRST_TRY) : L_tmpnam)
+static int make_pipe_fds(const char *path, int fds[2])
+{
+	if ((fds[0] = open(path, O_RDONLY | O_CREAT | O_EXCL, 0600)) < 0)
+		return -1;
+	if ((fds[1] = open(path, O_WRONLY)) < 0) {
+		close_void(fds[0]);
+		return -1;
+	}
+	if (unlink(path) < 0) {
+		close_void(fds[1]);
+		close_void(fds[0]);
+		return -1;
+	}
+	return 0;
+}
+
 int one_time_pipe(int fds[2])
 {
-	char path[PIPE_PATH_SIZE] = PIPE_FIRST_TRY;
-	fds[0] = fds[1] = -1;
-	for (long i = -1; i < 0 || (i < TMP_MAX && tmpnam(path)); ++i) {
-		// The first path tried is ".ctfpipe", in the current directory.
-		if ((fds[0] = open(path, O_RDONLY|O_CREAT|O_EXCL, 0600)) >= 0) {
-			if ((fds[1] = open(path, O_WRONLY)) < 0)
-				goto error_write;
-			if (unlink(path) < 0) goto error_unlink;
-			return 0;
-		} else if (errno != EEXIST) {
-			goto error_read;
-		}
+	if (!make_pipe_fds(".ctfpipe", fds)) return 0;
+	char path[L_tmpnam];
+	for (long i = 0; i < TMP_MAX && tmpnam(path); ++i) {
+		if (!make_pipe_fds(path, fds)) return 0;
+		if (errno != EEXIST) break;
 	}
-error_unlink:
-	close_void(fds[1]);
-error_write:
-	close_void(fds[0]);
-error_read:
 	// Fall back to a pipe that is non-blocking to prevent hanging.
 	if (pipe(fds)) return -1;
 	fcntl(fds[0], F_SETFL, fcntl(fds[0], F_GETFL) | O_NONBLOCK);
