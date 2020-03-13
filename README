@@ -88,13 +88,10 @@ Listing only test failure outcomes:
 
 Finally, here is a more complex script. It writes the output from each test into
 its own file in the directory 'logs'. The file is named after the test function.
-All old files are removed from the directory first. Here it is, in all its
-hideousness:
+Here it is, in all its hideousness:
 
-rm -f logs/*
-ceeteef TESTS |
-sed -n '/^[^-: ]/{
+ceeteef TESTS | sed '
 	s/'\''/'"'\\\\''"'/g
-	s/^\([^: ]\{1,\}\)[: ]\(.*\)$/printf %s\\\\n '\''\2'\'' >> logs\/\1/p
-}' |
-sh
+	s/^\([^-: ]\{1,\}\)[: ]\(.*\)$/printf %s\\\\n '\''\2'\'' >> logs\/\1/
+	s/^-- \([^ ]\{1,\}\) --$/rm -f logs\/\1/
+' | sh
