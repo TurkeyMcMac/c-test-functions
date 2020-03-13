@@ -70,8 +70,9 @@ OUTPUT PARSING
 I didn't add a whole lot of built-in output switches because I figure that's the
 Unix way or something. The output is fairly easy to parse.
 
-All of the following scripts can have styles enabled with `ceeteef`'s -s option.
-Replace TESTS in these examples with the name of your compiled test file.
+All of the following scripts, except the last one, can have styles enabled with
+`ceeteef`'s -s option. Replace TESTS in these examples with the name of your
+compiled test file.
 
 Listing all output of just the failing tests:
 
