@@ -37,16 +37,30 @@ Running `make` creates the executable.
 Install the command with `make install` or by manually copying the manual pages,
 the header, and the executable into your preferred directories.
 
-To write a test, include the `libctf.h` header in the `lib` directory. Now write
-a test:
+To write a test for C99 or above, include the `libctf.h` header in the `lib`
+directory. Now write a test:
 
 CTF_TEST(test_name,
 	printf("testing...");
 	assert(1 + 1 == 3);
 )
 
-This will only exist when the symbol CTF_TESTS_ENABLED is defined. If so, a
-static function with the name `test_name` is created, so you can't reuse the
+This will only exist when the symbol CTF_TESTS_ENABLED is defined.
+
+When using ANSI C, include `libc89tf.h` instead and write the test like this:
+
+CTF_TEST_FUN(test_name)
+{
+	printf("testing...");
+	assert(1 + 1 == 3);
+	return 0;
+}
+
+This requires an explicit return statement and will always generate the symbol,
+even with tests disabled. You should manually remove tests when necessary using
+`#if CTF_TESTS_ENABLED`.
+
+A static function with the name `test_name` is created, so you can't reuse the
 name. The executable `ceeteef` depends on test symbols in your program existing
 in the compiled version, so make sure symbols are exported by default in
 whatever way possible. This may require adding the `-shared` option, i.e.,

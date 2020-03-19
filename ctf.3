@@ -5,28 +5,37 @@
 
 .SH SYNOPSIS
 
-.B #include <libctf.h>
+\fB#include <libctf.h>\fR /* Also includes \fBCTF_TEST_FUN\fR. */
 
 \fBCTF_TEST\fR(\fIname\fR, \fIbody\fR)
+
+\fB#include <libc89tf.h>\fR
+
+\fBCTF_TEST_FUN\fR(\fIname\fR) { \fIbody\fR }
 
 .SH DESCRIPTION
 This is the API that goes with the \fBceeteef\fR(1) utility. Here is described
 how to create tests which \fBceeteef\fR(1) can run from the compiled binary.
 
-This API is meant primarily for C, for which C99 or above is necessary. C++11 or
-above also works, but keep in mind that all the tests do not fit into C++
-namespaces.
+This API is meant primarily for C. \fBCTF_TEST_FUN\fR is ANSI C compatible,
+while \fBCTF_TEST\fR requires C99 or above. The API also works with C++,
+although it does not respect namespaces. \fBCTF_TEST_FUN\fR will probably work
+with any C++ version, while \fBCTF_TEST\fR requires C++11 or above.
 
-Create your tests with \fBCTF_TEST\fR. Compile your program with
-\fBCTF_TESTS_ENABLED\fR defined to preserve the tests. \fBname\fR is a function
-name. \fIbody\fR is a function body. The brackets around the body are not
-necessary.
+Create your tests with \fBCTF_TEST\fR or \fBCTF_TEST_FUN\fR. Compile your
+program with \fBCTF_TESTS_ENABLED\fR defined to preserve the tests. \fIname\fR
+is a function name. \fIbody\fR is a function body. The brackets around the body
+are not necessary with \fBCTF_TEST\fR.
+
+\fBCTF_TEST\fR and \fBCTF_TEST_FUN\fR are very similar. However, \fBCTF_TEST\fR
+expands to nothing if tests are disabled, while \fBCTF_TEST_FUN\fR still creates
+a function. \fBCTF_TEST\fR also puts an implicit 'return 0' at the end of the
+function rather than requiring you to put one there.
 
 If the function neither crashes nor returns non-zero, the test has succeeded.
-Otherwise, it fails. If there is no return statement at the end of the function,
-the test succeeds when it reaches the end.
+Otherwise, it fails.
 
-Output from a test to \fIstdout\fR and \fIstdout\fR will be displayed, including
+Output from a test to \fIstderr\fR and \fIstdout\fR will be displayed, including
 messages about assertion failures and so on.
 
 To preserve the test symbols, you may need to make a shared library with the
@@ -60,6 +69,18 @@ CTF_TEST(hello_world,
   assert(1 + 1 == 3);
 .P
 )
+.P
+
+.P
+CTF_TEST_FUN(say_cheese)
+.P
+{
+.P
+  printf("Cheese!\\n");
+.P
+  return 0;
+.P
+}
 .PD
 
 Now compile and run it:
@@ -80,6 +101,12 @@ hello_world:Assertion failed: (1 + 1 == 3), function hello_world, file test.c,
 line 8.
 .P
 hello_world FAILED   Terminated by signal 6   Core dumped
+.P
+-- say_cheese --
+.P
+say_cheese:Cheese!
+.P
+say_cheese SUCCEEDED
 .PD
 
 .SH SEE ALSO
